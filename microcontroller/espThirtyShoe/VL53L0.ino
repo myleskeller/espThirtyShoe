@@ -23,8 +23,8 @@ VL53L0X sensor2;
 // - higher speed at the cost of lower accuracy OR
 // - higher accuracy at the cost of lower speed
 
-#define HIGH_SPEED
-//#define HIGH_ACCURACY
+//#define HIGH_SPEED
+#define HIGH_ACCURACY
 
 void checkVL53L0() {
   if (sensor.timeoutOccurred()) { //if this is time-consuming, remove it
