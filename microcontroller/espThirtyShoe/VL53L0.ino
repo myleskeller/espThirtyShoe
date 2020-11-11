@@ -28,6 +28,8 @@ void checkVL53L0() {
 //  if (sensor2_dataAvailable() == true)
     sensor_data[DISTANCE_R] = sensor2_getDistance();
 }
+//#define HIGH_SPEED
+#define HIGH_ACCURACY
 
 bool distance1_dataAvailable() {
   if (digitalRead(INT_LOX1) == LOW) {
