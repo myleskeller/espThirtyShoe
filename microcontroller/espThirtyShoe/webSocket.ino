@@ -36,14 +36,23 @@ void onWebSocketEvent(uint8_t client_num, WStype_t type, uint8_t * payload, size
       {
         webSerial.printf("[%u] get Text: %s\n", client_num, payload);
         switch (payload[0]) {
-          case 'f':
+          case 'r':
             {
               send_rate = atoi((const char*)&payload[1]);
+              Serial.print("send rate changed to:"); Serial.println(send_rate);
+            }
+            break;
+          case 'f':
+            {
+              int temp = atoi((const char*)&payload[1]);
+              HPfilterFrequency = temp / 1000.0;
+              Serial.print("High-Pass filter alpha changed to:"); Serial.println(HPfilterFrequency);
             }
             break;
           case '!':
             {
               webSerial.println("Restarting ESP32.");
+              Serial.println("Restarting ESP32.");
               delay(1000);
               ESP.restart();
             }

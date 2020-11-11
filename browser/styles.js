@@ -1,5 +1,6 @@
 // Create stylesheet
 var style = document.createElement('style');
+
 style.innerHTML =
 	// text color
 	'body {' +
@@ -33,6 +34,11 @@ style.innerHTML =
 
 	'.icon-bar input:hover {' +
 	'color: ' + secondaryColor + ';' +
+	'}' +
+
+	'#dialogue {' +
+	'background-color: ' + highEmphasisColor + ';' +
+	'color: ' + backgroundColor + ';' +
 	'}' +
 
 	'.tooltip .tooltiptext {' +

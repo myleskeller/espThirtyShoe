@@ -21,6 +21,15 @@ th {
 	font-size: 1.5em;
 }
 
+.stacked {
+	font-size: 0.5em;
+	text-shadow:
+	-1px -1px 0 #121212,  
+	 1px -1px 0 #121212,
+	 -1px 1px 0 #121212,
+	  1px 1px 0 #121212;
+}
+
 .icon-bar i {
 	display: block;
 	text-align: right;
@@ -41,6 +50,21 @@ th {
 	bottom: 10px;
 	left: 10px;
 	pointer-events: none;
+}
+
+#dialogue {
+	position: fixed; 
+	bottom: 50%; 
+	left: 50%; 
+	transform: translate(-50%,-50%); 
+	padding: 5px;
+	display: none;
+	text-align: center;
+	z-index: 101;
+}
+
+#dialogue_prompt {
+	text-align: left;
 }
 
 #info {
@@ -65,7 +89,17 @@ th {
 
 #accel-chart-container {
 	position: absolute;
-	bottom: 25%;
+	bottom: 10px;
+	left: 10px;
+	/* height: 25%;
+	width: 50%; */
+	z-index: 100;
+	pointer-events: none;
+}
+
+#vel-chart-container {
+	position: absolute;
+	bottom: 155px;
 	left: 10px;
 	/* height: 25%;
 	width: 50%; */

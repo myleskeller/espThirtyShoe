@@ -31,8 +31,12 @@ bool setupBNO080() {
   return status;
 }
 
+bool imu_dataAvailable() {
+  return myIMU.dataAvailable();
+}
+
 void checkBNO080() {
-  if (myIMU.dataAvailable() == true) {
+//  if (myIMU.dataAvailable() == true) {
     sensor_data[EULER_ROLL] = (myIMU.getRoll());
     sensor_data[EULER_PITCH] = (myIMU.getPitch());
     sensor_data[EULER_YAW] = (myIMU.getYaw());
@@ -43,6 +47,7 @@ void checkBNO080() {
     sampling_time = (now - last_measured) / 1000.00;
     sensor_data[TIMESTAMP] = sampling_time*1000;
     last_measured = now;
-    computePosition();
-  }
+//    computePosition();
+//  integrate_acc(); //TEMPORARY
+//  }
 }

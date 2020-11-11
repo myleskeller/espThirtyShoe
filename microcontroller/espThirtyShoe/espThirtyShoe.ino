@@ -11,7 +11,7 @@
 #include <Wire.h>
 #include "SparkFun_BNO080_Arduino_Library.h"
 
-#define SENSOR_DATA_SIZE          12
+#define SENSOR_DATA_SIZE          13
 float sensor_data[SENSOR_DATA_SIZE];
 #define LINEAR_ACCELEROMETER_X    0
 #define LINEAR_ACCELEROMETER_Y    1
@@ -25,6 +25,7 @@ float sensor_data[SENSOR_DATA_SIZE];
 #define EULER_PITCH               9
 #define EULER_YAW                 10
 #define TIMESTAMP                 11
+#define MOVEMENT                  12
 
 #define DECIMAL_PLACE    6
 #define SENSOR_POLL_INTERVAL 50
@@ -36,6 +37,7 @@ const char *password = "Miso'sWhistle";
 
 bool BNO080_status = false;
 bool VL53L0_status = false;
+
 
 void setup() {
   setupLED();
@@ -53,13 +55,11 @@ void setup() {
 void loop() {
   webSocket.loop();
   updateLED();
-  checkBNO080();
-  checkVL53L0();
-    Serial.print(sensor_data[LINEAR_ACCELEROMETER_X], 10); Serial.print(",");
-    Serial.print(sensor_data[LINEAR_ACCELEROMETER_Y], 10); Serial.print(",");
-    Serial.print(sensor_data[LINEAR_ACCELEROMETER_Z], 10);
-    Serial.print("\t\t");
-    Serial.print(sensor_data[DISTANCE_L]); Serial.print(",");
-    Serial.println(sensor_data[DISTANCE_R]);
-  sendSensorData();
+
+  if (imu_dataAvailable() && distance1_dataAvailable() && distance2_dataAvailable()) {
+    checkBNO080();
+    checkVL53L0();
+    getPosition(); 
+    sendSensorData();
+  }
 }

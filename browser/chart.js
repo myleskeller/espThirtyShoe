@@ -7,12 +7,7 @@ buf[id] = [
 	[],
 	[]
 ];
-//decimation vars
-// var decimationThreshold = 10; //values per plot-point
-// var miniCounterL = 0;
-// var miniCounterR = 0;
-// var miniBufL = [];
-// var miniBufR = [];
+
 function initChart() {
 	Chart.defaults.global.defaultFontColor = mediumEmphasisColor;
 	Chart.defaults.global.defaultFontFamily = "Futura";
@@ -94,7 +89,8 @@ function initChart() {
 	});
 	fillTimeAxis();
 
-	// initAccelChart();
+	initAccelChart();
+	initVelChart();
 }
 
 function changeChartFrameRate() {
@@ -121,7 +117,8 @@ function updateChart(dL, dR) {
 		y: dR // distance
 	});
 
-	// updateAccelChart(now);
+	updateAccelChart(now);
+	updateVelChart(now);
 }
 
 function fillTimeAxis() {
@@ -169,67 +166,98 @@ function resumeChart() {
 
 
 
-// var accelData;
-// const accelChartRate = 250; //ms
-//
-// var seriesOptions = [{
-// 		strokeStyle: 'rgba(255, 0, 0, 1)',
-// 		fillStyle: 'rgba(255, 0, 0, 0.1)',
-// 		lineWidth: 1
-// 	},
-// 	{
-// 		strokeStyle: 'rgba(0, 255, 0, 1)',
-// 		fillStyle: 'rgba(0, 255, 0, 0.1)',
-// 		lineWidth: 1
-// 	},
-// 	{
-// 		strokeStyle: 'rgba(0, 0, 255, 1)',
-// 		fillStyle: 'rgba(0, 0, 255, 0.1)',
-// 		lineWidth: 1
-// 	},
-// ];
+var accelData;
+const accelChartRate = 250; //ms
 
-// function initAccelChart() {
-// 	// Initialize an empty TimeSeries for each CPU.
-// 	accelData = [new TimeSeries(), new TimeSeries(), new TimeSeries()];
-//
-// 	// var now = new Date().getTime();
-// 	// for (var t = now - 1000 * 50; t <= now; t += 1000) {
-// 	//   addRandomValueToDataSets(t, accelData);
-// 	// }
-// 	// Every second, simulate a new set of readings being taken from each CPU.
-// 	// setInterval(function() {
-// 	//   addRandomValueToDataSets(new Date().getTime(), accelData);
-// 	// }, 1000);
-//
-//
-// 	// Build the timeline
-// 	var timeline = new SmoothieChart({
-// 		millisPerPixel: 50,
-// 		grid: {
-// 			strokeStyle: 'transparent',
-// 			borderVisible: false,
-// 			lineWidth: 1,
-// 			millisPerLine: 1000,
-// 			verticalSections: 4
-// 		},
-// 		tooltip: true,
-// 		limitFPS: 15
-// 	});
-// 	for (var i = 0; i < accelData.length; i++) {
-// 		timeline.addTimeSeries(accelData[i], seriesOptions[i]);
-// 	}
-// 	timeline.streamTo(document.getElementById("accelChart"), accelChartRate);
-// }
+var seriesOptions = [{
+		strokeStyle: 'rgba(255, 0, 0, 1)',
+		// fillStyle: 'rgba(255, 0, 0, 0.1)',
+		lineWidth: 1
+	},
+	{
+		strokeStyle: 'rgba(0, 255, 0, 1)',
+		// fillStyle: 'rgba(0, 255, 0, 0.1)',
+		lineWidth: 1
+	},
+	{
+		strokeStyle: 'rgba(0, 0, 255, 1)',
+		// fillStyle: 'rgba(0, 0, 255, 0.1)',
+		lineWidth: 1
+	},
+];
 
-// function addRandomValueToDataSets(time, dataSets) {
-//   for (var i = 0; i < dataSets.length; i++) {
-//     dataSets[i].append(time, Math.random());
-//   }
-// }
+function initAccelChart() {
+	accelData = [new TimeSeries(), new TimeSeries(), new TimeSeries()];
 
-// function updateAccelChart(time) {
-// 	accelData[0].append(time, vX);
-// 	accelData[1].append(time, vY);
-// 	accelData[2].append(time, vZ);
-// }
+	var timeline = new SmoothieChart({
+		millisPerPixel: 50,
+		grid: {
+			strokeStyle: 'transparent',
+			borderVisible: false,
+			lineWidth: 1,
+			millisPerLine: 1000,
+			verticalSections: 4,
+			fillStyle:'transparent'
+		},
+		tooltip: true,
+		limitFPS: 15
+	});
+	for (var i = 0; i < accelData.length; i++) {
+		timeline.addTimeSeries(accelData[i], seriesOptions[i]);
+	}
+	timeline.streamTo(document.getElementById("accelChart"), accelChartRate);
+}
+
+function updateAccelChart(time) {
+	accelData[0].append(time, laX);
+	accelData[1].append(time, laY);
+	accelData[2].append(time, laZ);
+}
+
+var velData;
+const velChartRate = 250; //ms
+
+var seriesOptions = [{
+		strokeStyle: 'rgba(255, 0, 0, 1)',
+		// fillStyle: 'rgba(255, 0, 0, 0.1)',
+		lineWidth: 1
+	},
+	{
+		strokeStyle: 'rgba(0, 255, 0, 1)',
+		// fillStyle: 'rgba(0, 255, 0, 0.1)',
+		lineWidth: 1
+	},
+	{
+		strokeStyle: 'rgba(0, 0, 255, 1)',
+		// fillStyle: 'rgba(0, 0, 255, 0.1)',
+		lineWidth: 1
+	},
+];
+
+function initVelChart() {
+	velData = [new TimeSeries(), new TimeSeries(), new TimeSeries()];
+
+	var timeline = new SmoothieChart({
+		millisPerPixel: 50,
+		grid: {
+			strokeStyle: 'transparent',
+			borderVisible: false,
+			lineWidth: 1,
+			millisPerLine: 1000,
+			verticalSections: 4,
+			fillStyle:'transparent'
+		},
+		tooltip: true,
+		limitFPS: 15
+	});
+	for (var i = 0; i < velData.length; i++) {
+		timeline.addTimeSeries(velData[i], seriesOptions[i]);
+	}
+	timeline.streamTo(document.getElementById("velChart"), velChartRate);
+}
+
+function updateVelChart(time) {
+	velData[0].append(time, vX);
+	velData[1].append(time, vY);
+	velData[2].append(time, vZ);
+}

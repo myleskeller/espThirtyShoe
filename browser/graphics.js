@@ -22,9 +22,17 @@ var pX_old;
 var pY_old;
 var pZ_old;
 
+var qX_old;
+var qY_old;
+var qZ_old;
+
+var mA_old;
 
 
-manager.onLoad = function() {
+
+
+
+manager.onLoad = function () {
 	initGraphicsAfterLoading();
 };
 
@@ -38,9 +46,14 @@ function initGraphicsAfterLoading() {
 	const container = document.createElement('div');
 	document.body.appendChild(container);
 	var _shoe = scene.getObjectByName("shoe");
-	camera = new THREE.PerspectiveCamera(cameraFov, window.innerWidth / window.innerHeight, 0.1, 5000);
-	camera.position.set(400, 00, 0); //right.stl
+	camera = new THREE.PerspectiveCamera(cameraFov, window.innerWidth / window.innerHeight, 0.1, 10000);
+	camera.position.set(1000, 0, 0); //! right.stl; normal
+	camera.position.set(0, 1000, 0); //! camera is -90deg offset from viewpoint axis, and model needs to roll -90deg;
+	
 	// camera.position.set(-400, 400, 100); //shoe_reduced.stl
+
+	// camera.position.set(1000, 00, 0); //right.stl
+
 
 	const controls = new THREE.OrbitControls(camera, container);
 	controls.addEventListener('change', render);
@@ -193,7 +206,8 @@ function createMaterials() {
 
 function createMeshes(_scene) {
 	var loader = new THREE.STLLoader(manager);
-	loader.load('./right.stl', function(geometry) {
+	loader.load('./right.stl', function (geometry) {
+		// loader.load('./shoe_reduced.stl', function (geometry) {
 		var shoeMaterial = new THREE.MeshPhongMaterial({
 			color: secondaryColor,
 			specular: 0x444444,
@@ -207,7 +221,9 @@ function createMeshes(_scene) {
 		mesh.name = "shoe";
 
 		// mesh.rotation.set(THREE.Math.degToRad(0), THREE.Math.degToRad(35), THREE.Math.degToRad(0)); //shoe_reduced.stl
-		mesh.rotation.set(THREE.Math.degToRad(0), THREE.Math.degToRad(180), THREE.Math.degToRad(0)); //right.stl
+		mesh.rotation.set(THREE.Math.degToRad(0), THREE.Math.degToRad(180), THREE.Math.degToRad(0)); //! right.stl; normally correct
+		// mesh.rotation.set(THREE.Math.degToRad(0), THREE.Math.degToRad(0), THREE.Math.degToRad(0)); //right.stl
+
 		shoe_length = getSize(mesh).z;
 		shoe_width = getSize(mesh).x;
 		shoe_height = getSize(mesh).y;
@@ -277,25 +293,11 @@ function setupSelectAndZoom(camera, container, controls, materials) {
 		isDragging = false;
 		mouse.x = event.clientX / window.innerWidth * 2 - 1;
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-		// raycaster.setFromCamera(mouse, camera);
-		// const intersects = raycaster.intersectObjects(meshes);
-		// if (intersects.length > 0) {
-		// 	const mesh = intersects[0].object;
-		// 	if (selection.includes(mesh)) {
-		// 		mesh.material = materials.main;
-		// 		selection.splice(selection.indexOf(mesh), 1);
-		// 	} else {
-		// 		selection.push(mesh);
-		// 		mesh.material = materials.highlight;
-		// 	}
-		// 	if (selection.length > 0) zoomCameraToSelection(camera, controls, selection);
-		// }
 	}, false);
 }
 
 function zoomCameraToSelection(camera, controls, selection, fitRatio = 1.2) {
 	const box = new THREE.Box3();
-	// for (const object of selection) box.expandByObject(object);
 	box.expandByObject(selection);
 	const size = box.getSize(new THREE.Vector3());
 	const center = box.getCenter(new THREE.Vector3());
@@ -304,9 +306,9 @@ function zoomCameraToSelection(camera, controls, selection, fitRatio = 1.2) {
 	const fitWidthDistance = fitHeightDistance / camera.aspect;
 	const distance = fitRatio * Math.max(fitHeightDistance, fitWidthDistance);
 	const direction = controls.target.clone().
-	sub(camera.position).
-	normalize().
-	multiplyScalar(distance);
+		sub(camera.position).
+		normalize().
+		multiplyScalar(distance);
 	controls.maxDistance = distance * 10;
 	controls.target.copy(center);
 	camera.near = distance / 100;
@@ -317,47 +319,43 @@ function zoomCameraToSelection(camera, controls, selection, fitRatio = 1.2) {
 }
 
 function updateGraphics() {
-	if (page_visible) { //don't bother updating if nobody's looking
+	if (page_visible) { //* don't bother updating if nobody's looking
 		var render_needed = false;
 		var _shoe = scene.getObjectByName("shoe");
 
-		if (motion_translation == true) {
+		if (qX_old != qX || qY_old != qY || qZ_old != qZ) { //* changes shoe attitude
+			render_needed = true;
+			updateAttitude(_shoe);
+		}
+		if (motion_translation == true) { //*changes shoe position
 			if (laX_old != laX || laY_old != laY || laZ_old != laZ) {
 				render_needed = true;
-				//changes shoe position
+				
 				updatePosition(_shoe);
-				_shoe.updateMatrix();
 			}
 		}
-		if (eR_old != eR || eP_old != eP) {
+		if (eR_old != eR || eP_old != eP) { //* changes shoe/gravity vector orientation
 			render_needed = true;
 			//change gravity vector Angle
 			var _gravity = scene.getObjectByName("gravity");
 			updateGeometry(_gravity);
-			_gravity.updateMatrix();
-
 			//check validity of distance data from angle
 			checkDistanceValidity();
-
 			//changes shoe angle
-			updateOrientation(_shoe);
-			_shoe.updateMatrix();
+			//! updateOrientation(_shoe);
 		}
-		if (dR_old != dR) {
+		if (dR_old != dR) { //* changes right line distance
 			render_needed = true;
-			//changes line distance
 			var _lineL = _shoe.getObjectByName("lineL");
 			_lineL.scale.z = current_scale * (dL / max_range);
 			_lineL.updateMatrix();
 		}
-		if (dL_old != dL) {
+		if (dL_old != dL) { //* changes left line distance
 			render_needed = true;
-			//changes line distance
 			var _lineR = _shoe.getObjectByName("lineR");
 			_lineR.scale.z = current_scale * (dR / max_range);
 			_lineR.updateMatrix();
 		}
-
 		if (render_needed)
 			render();
 	}
@@ -365,10 +363,14 @@ function updateGraphics() {
 	laX_old = laX;
 	laY_old = laY;
 	laZ_old = laZ;
+	qX_old = qX;
+	qY_old = qY;
+	qZ_old = qZ;
 	eR_old = eR;
 	eP_old = eP;
 	dR_old = dR;
 	dL_old = dL;
+	mA_old = mA;
 }
 
 function checkDistanceValidity() {
@@ -403,10 +405,10 @@ function toggleWireframe(object) {
 }
 
 //prototype override for adding pivot to object3D
-(function() {
+(function () {
 	'use strict';
 
-	THREE.Object3D.prototype.updateMatrix = function() {
+	THREE.Object3D.prototype.updateMatrix = function () {
 		this.matrix.compose(this.position, this.quaternion, this.scale);
 
 		var pivot = this.pivot;

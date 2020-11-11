@@ -1,3 +1,11 @@
+//? get calibration/tare working
+//? implement hardware stationary detection
+//? make sure tare is correct
+//TODO rework quaternion as default representation of orientation
+//TODO change camera to focus on object rather than fixed viewpoint
+//TODO see if quaternion yields better results than euler angles
+//
+
 const min_range = 1; //mm
 const max_range = 1200; //mm
 const min_accurate_range = 50; //mm
@@ -15,6 +23,7 @@ const min_valid_pitch = THREE.Math.degToRad(0); //degrees
 const max_vertical_displacement = 85.5434218516; //mm
 
 
+var freq;
 var shoe_length, shoe_width, shoe_height, current_scale;
 var gravityX, gravityY, gravityZ, gravityLine, lineL, lineR;
 
@@ -52,20 +61,57 @@ function updateGeometry(object) {
 		new_vector
 	);
 	gravityLine.setGeometry(geometryGravity);
+	object.updateMatrix();
 }
 
 function updatePosition(_shoe) {
-	console.log("updatedPosition");
-	//hopefully corrected directions
-	_shoe.translateX((pY) * sp); // / current_scale);
-	_shoe.translateY((-pZ) * sp); // / current_scale);
-	_shoe.translateZ((-pX) * sp); // / current_scale);
-	console.log((pY) * sp+','+ (-pZ) * sp +','+ (-pX) * sp);
+	//* offsets local position relative to object
+	// _shoe.translateX((vX) ); // / current_scale); doesn't matter for rendering
+	// _shoe.translateY((-vZ) ); // / current_scale);
+	// _shoe.translateZ((-vY) ); // / current_scale);
+	//* changes absolute position relative to origin
+	_shoe.position.set(pX / current_scale, -pZ / current_scale, -pY / current_scale);
+
+	// console.log((pY) * sp+','+ (-pZ) * sp +','+ (-pX) * sp);
+	_shoe.updateMatrix();
 }
 
 function updateOrientation(_shoe) {
 	_shoe.rotation.x = eR;
-	_shoe.rotation.z = eP; //idk why, but this had to be made negative...
+	_shoe.rotation.z = eP;
+	_shoe.rotation.y = eY;
+	// _shoe.rotation.y = parseFloat(eY)+THREE.Math.degToRad(180);  //doesn't matter for rendering
+	_shoe.updateMatrix();
+}
+
+function updateAttitude(_shoe) {
+	//* stuff always gets weird when the quaternion gets involved..
+	quat1 = new THREE.Quaternion(qR, qX, qY, qZ);
+	quat2 = new THREE.Quaternion(1, 0, 0, 0);
+	// quat2.setFromAxisAngle ( axis : Vector3, angle : Float ); 
+	//TODO figure out how to properly offset output quaternion to get correct rendering of orientation
+	// quat2.setFromAxisAngle (new THREE.Vector3(-1, 0, 0), THREE.Math.degToRad(270)); //-roll
+	// quat2.setFromAxisAngle (new THREE.Vector3(1, 0, 0), THREE.Math.degToRad(270)); //-roll
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, -1, 0), THREE.Math.degToRad(270)); //-pitch
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 1, 0), THREE.Math.degToRad(270)); //-pitch
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 0, 1), THREE.Math.degToRad(270)); //yaw 
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 0, -1), THREE.Math.degToRad(270)); //yaw
+
+	// quat2.setFromAxisAngle (new THREE.Vector3(-1, 0, 0), THREE.Math.degToRad(90)); //roll
+	// quat2.setFromAxisAngle (new THREE.Vector3(1, 0, 0), THREE.Math.degToRad(90)); //-roll
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, -1, 0), THREE.Math.degToRad(90)); //pitch 
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 1, 0), THREE.Math.degToRad(90)); //-pitch
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 0, 1), THREE.Math.degToRad(90)); //yaw
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 0, -1), THREE.Math.degToRad(90)); //-yaw
+
+	// quat2.setFromAxisAngle (new THREE.Vector3(-1, 0, 0), THREE.Math.degToRad(180)); 
+	// quat2.setFromAxisAngle (new THREE.Vector3(1, 0, 0), THREE.Math.degToRad(180)); 
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, -1, 0), THREE.Math.degToRad(180)); 
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 1, 0), THREE.Math.degToRad(180)); 
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 0, 1), THREE.Math.degToRad(180)); 
+	// quat2.setFromAxisAngle (new THREE.Vector3(0, 0, -1), THREE.Math.degToRad(180)); 
+	_shoe.quaternion.multiplyQuaternions(quat1, quat2);
+	_shoe.updateMatrix();
 }
 
 
@@ -188,7 +234,7 @@ function accelerate(t) { //, pX_old, pY_old, pZ_old, vX_old, vY_old, vZ_old) {
 //array for linear accelerometer data
 var accelerometerData = Array.apply(null, {
 	length: dataSetSize
-}).map(function() {
+}).map(function () {
 	// return 4; //why is this 4??
 });
 //Apply kalman filter
@@ -197,6 +243,6 @@ var kalmanFilter = new KalmanFilter({
 	Q: 3
 });
 //i'm not really sure how this syntax works
-var filteredAccelerometerData = accelerometerData.map(function(v) {
+var filteredAccelerometerData = accelerometerData.map(function (v) {
 	return kalmanFilter.filter(v);
 });
