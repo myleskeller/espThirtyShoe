@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" name="viewport"
+		content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+	<link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
+	<link rel="stylesheet" href="./styles.css">
+	<script>
+		var highEmphasisColor = "rgba(255, 255, 255, 0.87)";
+		var mediumEmphasisColor = "rgba(255, 255, 255, 0.60)";
+		var disabledColor = "rgba(255, 255, 255, 0.38)";
+		var primaryColor = "#BB86FC";
+		var primaryVariantColor = "#3700B3";
+		var secondaryColor = "#03DAC6";
+		var errorColor = "#CF6679";
+		var backgroundColor = "#121212";
+		var data1Color = "#6E3013";
+		var data2Color = "#6C6E02";
+	</script>
+
+	<script src="./styles.js"></script>
+	<script src="./three.min.js"></script>
+	<script src="./OrbitControls.js"></script>
+	<script src="./THREE.MeshLine.js"></script>
+	<script src="./WebGL.js"></script>
+	<script src="./STLLoader.js"></script>
+	<script src="./Chart.bundle.min.js"></script>
+	<script src="./chartjs-plugin-streaming.min.js"></script>
+	<script src="./smoothie.js"></script>
+	<script src="./FileSaver.min.js"></script>
+	<script src="./xlsx.mini.min.js"></script>
+	<script src="./fileIO.js"></script>
+	<script src="./UI.js"></script>
+	<script src="./chart.js"></script>
+	<script src="./kalman.min.js"></script>
+	<script src="./geometry.js"></script>
+	<script src="./graphics.js"></script>
+	<script src="./reconnecting-websocket.min.js"></script>
+	<script src="./WebSocket.js"></script>
+	<script src="./sensor.js"></script>
+	<script src="platform.js"></script>
+	<!-- <script src="esprima.js"></script> -->
+	<!-- <script src="js-yaml.min.js"></script> -->
+	<!-- <script src="/socket.io/socket.io.js"></script> -->
+
+
+	<title>ESP-THIRTY-SHOE</title>
+
+</head>
+
+<body>
+	<div id="dialogue">
+		<p id="dialogue_prompt"></p>
+		<p>
+			<button id="dialogue_ok" type="button">OK</button>
+		</p>
+	</div>
+
+	<div class="icon-bar">
+		<i id="button_expandSettingsMenu" class="mdi mdi-cog-outline tooltip"><span class="tooltiptext">expand
+				settings</span></i>
+		<i id="button_toggleAccelerometerMotion" class="active mdi mdi-axis-arrow tooltip"><span
+				class="tooltiptext">toggle accelerometer motion</span></i>
+		<i id="button_changeShoeTexture" class="mdi mdi-shoe-formal tooltip"><span class="tooltiptext">toggle wireframe
+				rendering</span></i>
+		<i id="button_toggleChartVisibility" class="active mdi mdi-chart-line tooltip"><span
+				class="tooltiptext">show/hide graph</span></i>
+		<i id="button_toggleConsoleVisibility" class="active mdi mdi-console tooltip"><span
+				class="tooltiptext">show/hide console</span></i>
+		<i id="button_tareGyro" class="mdi mdi-scale-off tooltip"><span class="tooltiptext">tare gyroscope
+				(persistent)</span></i>
+		<i id="button_restartESP" class="mdi mdi-restart tooltip"><span class="tooltiptext">reboot device</span></i>
+		<i id="button_calibrateAccel" class="mdi mdi-scale-balance tooltip"><span class="tooltiptext">calibrate
+				accelerometer</span></i>
+		<i id="button_changeUpdateSpeed" class="mdi mdi-clock-fast tooltip"><span class="tooltiptext">change update
+				speed</span></i>
+		<i id="button_changeFilterFrequency" class="mdi mdi-waveform tooltip"><span class="tooltiptext">change
+				accelerometer filter cutoff frequency</span></i>
+		<i id="button_toggleRecordData" class="mdi mdi-record-rec tooltip"><span class="tooltiptext">start/stop
+				recording data to file</span></i>
+
+		<i id="button_emaFilterToggle" class="active mdi mdi-waveform tooltip"><span id="emaval"
+				class="tooltiptext">toggle EMA filtration</span></i>
+		<i id="button_lpFilterToggle" class="mdi mdi-waveform tooltip"><span id="lpval" class="tooltiptext">toggle LP
+				filtration</span></i>
+		<i id="button_hpFilterToggle" class="mdi mdi-waveform tooltip"><span id="hpval" class="tooltiptext">toggle HP
+				filtration</span></i>
+
+		<i id="button_lpFilterToggleIcon" class="stacked mdi mdi-filter-minus"></i>
+		<i id="button_hpFilterToggleIcon" class="stacked mdi mdi-filter-plus"></i>
+		<i id="button_emaFilterToggleIcon" class="active stacked mdi mdi-filter-remove"></i>
+
+	</div>
+
+	<div id="info">
+		<table>
+			<!-- <tr>
+				<th colspan="4">Rotation Vector (Radians)</th>
+			</tr>
+			<tr class="data">
+				<td id="qI">0</td>
+				<td id="qJ">0</td>
+				<td id="qK">0</td>
+				<td id="qA">0</td>
+			</tr> -->
+
+			<tr>
+				<th colspan="3">Euler Angle (Degrees)</th>
+			</tr>
+			<tr class="data">
+				<td id="eR">0</td>
+				<td id="eP">0</td>
+				<td id="eY">0</td>
+			</tr>
+
+			<!-- <tr>
+				<th colspan="3">Gyroscope (Degrees)</th>
+			</tr>
+			<tr class="data">
+				<td id="gX">0</td>
+				<td id="gY">0</td>
+				<td id="gZ">0</td>
+			</tr> -->
+
+			<tr>
+				<th colspan="4">Linear Acceleration (mm/s²)</th>
+			</tr>
+			<tr class="data">
+				<td id="laX">0</td>
+				<td id="laY">0</td>
+				<td id="laZ">0</td>
+			</tr>
+
+			<th colspan="4">Velocity (mm/sample_period)</th>
+			</tr>
+			<tr class="data">
+				<td id="vX">0</td>
+				<td id="vY">0</td>
+				<td id="vZ">0</td>
+			</tr>
+
+			<tr>
+				<th colspan="3">Position Dispalcement from Origin (mm)</th>
+			</tr>
+			<tr class="data">
+				<td id="pX">0</td>
+				<td id="pY">0</td>
+				<td id="pZ">0</td>
+				<!-- <td id="aA">0</td> -->
+			</tr>
+
+			<tr>
+				<th colspan="2">Distance (mm)</th>
+			</tr>
+			<tr class="data">
+				<td id="dL">0</td>
+				<td id="dR">0</td>
+			</tr>
+			<tr>
+				<th>Sample Period (s)</th>
+				<th> </th>
+				<th>Movement</th>
+			</tr>
+			<tr class="data">
+				<td id="sp">0</td>
+				<td> </td>
+				<td id="mv">...</td>
+			</tr>
+			<!-- <tr>
+				<th>Steps</th>
+			</tr>
+			<tr class="data">
+				<td id="steps">0</td>
+			</tr> -->
+		</table>
+	</div>
+	<div id="chart-container">
+		<canvas id="chart">
+	</div>
+
+	<div id="accel-chart-container">
+		<span>Acceleration</span></br>
+		<canvas id="accelChart" height="125" width="700">
+	</div>
+
+	<div id="vel-chart-container">
+		<span>Velocity</span></br>
+		<canvas id="velChart" height="125" width="700">
+	</div>
+
+	<div id="console">
+		<div id="logs"></div>
+	</div>
+	<div id=time-axis-container>
+		<div id=time-axis>
+			<div class="time-value"></div>
+		</div>
+	</div>
+
+
+
+</body>
+<script>
+	function init() {
+		initChart();
+		initWebSocket("127.0.0.1:81");
+		initGraphics();
+		initPlatform();
+		initChecklist();
+		addEventListeners();
+	}
+</script>
+
+<body onLoad="javascript:init()">
+
+</html>

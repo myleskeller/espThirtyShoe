@@ -7,30 +7,6 @@ const bottom_center_shoe = new THREE.Vector3();
 const scene = new THREE.Scene();
 var renderer;
 var camera;
-//old vars for quick comparison
-var aX_old, aY_old, aZ_old, laX_old, laY_old, laZ_old, eR_old, eP_old, dR_old, dL_old;
-
-
-var pX, pY, pZ, vX, vY, vZ;
-
-
-var vX_old;
-var vY_old;
-var vZ_old;
-
-var pX_old;
-var pY_old;
-var pZ_old;
-
-var qX_old;
-var qY_old;
-var qZ_old;
-
-var mA_old;
-
-
-
-
 
 manager.onLoad = function () {
 	initGraphicsAfterLoading();
@@ -44,12 +20,16 @@ function initGraphics() {
 
 function initGraphicsAfterLoading() {
 	const container = document.createElement('div');
-	document.body.appendChild(container);
+	container.id = "three-dimensional-visualizer";
+	// container.classList.add("item"); //should add it to the biggest box in this golden ratio garbage..
+	// container.classList.add("a"); //should add it to the biggest box in this golden ratio garbage..
+	// document.body.appendChild(container);
+	document.getElementsByClassName("container")[0].appendChild(container);
 	var _shoe = scene.getObjectByName("shoe");
 	camera = new THREE.PerspectiveCamera(cameraFov, window.innerWidth / window.innerHeight, 0.1, 10000);
 	camera.position.set(1000, 0, 0); //! right.stl; normal
 	camera.position.set(0, 1000, 0); //! camera is -90deg offset from viewpoint axis, and model needs to roll -90deg;
-	
+
 	// camera.position.set(-400, 400, 100); //shoe_reduced.stl
 
 	// camera.position.set(1000, 00, 0); //right.stl
@@ -69,8 +49,8 @@ function initGraphicsAfterLoading() {
 	// var axesHelper = new THREE.AxesHelper(100);
 	// _shoe.attach(axesHelper);
 	//
-	var axesHelperScene = new THREE.AxesHelper(2000);
-	scene.attach(axesHelperScene);
+	// var axesHelperScene = new THREE.AxesHelper(2000);
+	// scene.attach(axesHelperScene);
 
 	renderer = createRenderer(container);
 	setupOnWindowResize(camera, container, renderer);
@@ -232,7 +212,6 @@ function createMeshes(_scene) {
 		//construct gravity line
 		createGravityVector(mesh);
 
-
 		mesh.pivot = new THREE.Vector3(0, 0, shoe_length * (1 / 4)); //set shoe model pivot point to IMU location
 
 		//construct helper dot for pivot point
@@ -247,7 +226,6 @@ function createMeshes(_scene) {
 
 		//construct distance lines
 		createLines(mesh);
-
 
 		//move shoe back to origin
 		mesh.translateZ(shoe_length * (1 / 4)); //translate shoe model back to pivot point
@@ -319,58 +297,10 @@ function zoomCameraToSelection(camera, controls, selection, fitRatio = 1.2) {
 }
 
 function updateGraphics() {
-	if (page_visible) { //* don't bother updating if nobody's looking
-		var render_needed = false;
-		var _shoe = scene.getObjectByName("shoe");
-
-		if (qX_old != qX || qY_old != qY || qZ_old != qZ) { //* changes shoe attitude
-			render_needed = true;
-			updateAttitude(_shoe);
-		}
-		if (motion_translation == true) { //*changes shoe position
-			if (laX_old != laX || laY_old != laY || laZ_old != laZ) {
-				render_needed = true;
-				
-				updatePosition(_shoe);
-			}
-		}
-		if (eR_old != eR || eP_old != eP) { //* changes shoe/gravity vector orientation
-			render_needed = true;
-			//change gravity vector Angle
-			var _gravity = scene.getObjectByName("gravity");
-			updateGeometry(_gravity);
-			//check validity of distance data from angle
-			checkDistanceValidity();
-			//changes shoe angle
-			//! updateOrientation(_shoe);
-		}
-		if (dR_old != dR) { //* changes right line distance
-			render_needed = true;
-			var _lineL = _shoe.getObjectByName("lineL");
-			_lineL.scale.z = current_scale * (dL / max_range);
-			_lineL.updateMatrix();
-		}
-		if (dL_old != dL) { //* changes left line distance
-			render_needed = true;
-			var _lineR = _shoe.getObjectByName("lineR");
-			_lineR.scale.z = current_scale * (dR / max_range);
-			_lineR.updateMatrix();
-		}
-		if (render_needed)
+	sensors.forEach(element => {
+		if (element.updateGraphics() == true)
 			render();
-	}
-
-	laX_old = laX;
-	laY_old = laY;
-	laZ_old = laZ;
-	qX_old = qX;
-	qY_old = qY;
-	qZ_old = qZ;
-	eR_old = eR;
-	eP_old = eP;
-	dR_old = dR;
-	dL_old = dL;
-	mA_old = mA;
+	});
 }
 
 function checkDistanceValidity() {

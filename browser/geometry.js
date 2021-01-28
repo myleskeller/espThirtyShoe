@@ -86,7 +86,8 @@ function updateOrientation(_shoe) {
 
 function updateAttitude(_shoe) {
 	//* stuff always gets weird when the quaternion gets involved..
-	quat1 = new THREE.Quaternion(qR, qX, qY, qZ);
+	// quat1 = new THREE.Quaternion(qR, qX, qY, qZ);
+	quat1 = new THREE.Quaternion(sensors[4].value[3], sensors[4].value[0], sensors[4].value[1], sensors[4].value[2]);
 	quat2 = new THREE.Quaternion(1, 0, 0, 0);
 	// quat2.setFromAxisAngle ( axis : Vector3, angle : Float ); 
 	//TODO figure out how to properly offset output quaternion to get correct rendering of orientation
@@ -237,12 +238,12 @@ var accelerometerData = Array.apply(null, {
 }).map(function () {
 	// return 4; //why is this 4??
 });
-//Apply kalman filter
-var kalmanFilter = new KalmanFilter({
-	R: 0.01,
-	Q: 3
-});
+// //Apply kalman filter
+// var kalmanFilter = new KalmanFilter({
+// 	R: 0.01,
+// 	Q: 3
+// });
 //i'm not really sure how this syntax works
-var filteredAccelerometerData = accelerometerData.map(function (v) {
-	return kalmanFilter.filter(v);
-});
+// var filteredAccelerometerData = accelerometerData.map(function (v) {
+// 	return kalmanFilter.filter(v);
+// });

@@ -7,6 +7,10 @@ style.innerHTML =
 	'color: ' + mediumEmphasisColor + ';' +
 	'background-color: ' + backgroundColor + ';' +
 	'}' +
+	// text color
+	'time-axis {' +
+	'background-color: ' + backgroundColor + ';' +
+	'}' +
 	// hyperlink color
 	'a {' +
 	'color: ' + primaryColor + ';' +
@@ -23,6 +27,10 @@ style.innerHTML =
 	'.gravity {' +
 	'color: ' + primaryColor + ';' +
 	'}' +
+	// item tooltip colors
+	'#info .tooltip:hover .tooltiptext {' +
+	'color: ' + secondaryColor + ';' +
+	'}' +
 	// icon colors
 	'.icon-bar {' +
 	'color: ' + disabledColor + ';' +
@@ -32,7 +40,7 @@ style.innerHTML =
 	'color: ' + highEmphasisColor + ';' +
 	'}' +
 
-	'.icon-bar input:hover {' +
+	'.icon-bar input:hover #info input:hover {' +
 	'color: ' + secondaryColor + ';' +
 	'}' +
 

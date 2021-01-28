@@ -75,6 +75,48 @@ function addEventListeners() {
 		}
 	});
 
+	for (i = 0; i < sensors.length; i++) {
+		//TODO add procedural adding of click listeners to toggle state of sensors
+		var _name = sensors[i].name;
+		var button_element = 'button_' + _name;
+
+		var _button_element = document.getElementById(button_element);
+		addMouseListeners(_button_element);
+		console.log("added event listeners for " + sensors[i].name)
+
+		_button_element.addEventListener("click", function (event) {
+			//* toggle state of button
+			_button_element.classList.toggle('active');
+			//* toggle rendering of object
+			// var __name = _name;
+			// var _sensor = sensors.filter(obj => {
+			// 	return obj.name === __name;
+			// })
+			var __name = this.id.replace("button_", '');
+			// console.log("who dis?" + __name);
+			// var _sensor = this.//syntax to get element id as string//
+			// console.log("is sensors already create??" + sensors);
+
+			// var _sensor = sensors.filter(obj => {
+			// 	return obj.name === __name;
+			// })
+			var _sensor = sensors.find(x => x.name == __name);
+			this.classList.toggle('active');
+
+			// console.log("who dis?" + _sensor.name)
+
+			_sensor.toggleVisibility(); //! this reference is out of scope and will need to be accomplished another way.
+			// if (sensors[i].visible == false) {
+			// 	// if (_console.style.display === 'none') {
+			// 	sensors[i].visible = true;
+			// 	// _console.style.display = 'flex';
+			// } else {
+			// 	sensors[i].visible = false;
+			// 	// _console.style.display = 'none';
+			// }
+		});
+	}
+
 	document.getElementById("button_changeShoeTexture").addEventListener("click", function (event) {
 		document.getElementById('button_changeShoeTexture').classList.toggle('active');
 		toggleWireframe();
@@ -89,7 +131,7 @@ function addEventListeners() {
 		if (result == true) {
 			connection.send('0');
 		} else {
-			addConsoleLog("Calibration cancelled.");
+			handleConsoleData("Calibration cancelled.");
 		}
 	});
 
@@ -216,7 +258,8 @@ function addMouseListeners(element) {
 	});
 }
 
-function addConsoleLog(log) {
+function handleConsoleData(log) {
+	console.log('Server: ', log);
 	document.getElementById('logs').innerHTML += log + '</br>';
 }
 
@@ -224,15 +267,15 @@ function changeUpdateSpeed() {
 	rate = prompt("sensor polling rate (in milliseconds):", rate);
 	if (rate == null || rate == "") {
 		connection.send('r0');
-		addConsoleLog("polling rate set to realtime.");
+		handleConsoleData("polling rate set to realtime.");
 	} else {
 		connection.send('r' + rate);
-		addConsoleLog('polling rate set to ' + rate + '.');
+		handleConsoleData('polling rate set to ' + rate + '.');
 	}
 	changeChartFrameRate();
 }
 
-function addConsoleLog(log) {
+function handleConsoleData(log) {
 	document.getElementById('logs').innerHTML += log + '</br>';
 }
 
@@ -240,10 +283,10 @@ function changeFilterAlpha() {
 	connection.send('$');
 	freq = prompt("acceleration-to-position EMA filter alpha:", EMA);
 	if (freq == null || freq == "") {
-		addConsoleLog("alpha not changed.");
+		handleConsoleData("alpha not changed.");
 	} else {
 		connection.send('f' + parseFloat(freq) * 1000); //changes 0.0# to #00, because i don't get how websocket deals with unsigned chars.
-		addConsoleLog('alpha set to ' + freq + '.');
+		handleConsoleData('alpha set to ' + freq + '.');
 	}
 }
 
@@ -251,10 +294,10 @@ function changeLPFilter() {
 	connection.send('$');
 	freq = prompt("acceleration-to-position low-pass filter cutoff frequency:", LP);
 	if (freq == null || freq == "") {
-		addConsoleLog("cutoff frequency not changed.");
+		handleConsoleData("cutoff frequency not changed.");
 	} else {
 		connection.send('o' + parseFloat(freq) * 1000); //changes 0.0# to #00, because i don't get how websocket deals with unsigned chars.
-		addConsoleLog('cutoff frequency set to ' + freq + '.');
+		handleConsoleData('cutoff frequency set to ' + freq + '.');
 	}
 }
 
@@ -262,10 +305,10 @@ function changeHPFilter() {
 	connection.send('$');
 	freq = prompt("acceleration-to-position high-pass filter cutoff frequency:", HP);
 	if (freq == null || freq == "") {
-		addConsoleLog("cutoff frequency not changed.");
+		handleConsoleData("cutoff frequency not changed.");
 	} else {
 		connection.send('i' + parseFloat(freq) * 1000); //changes 0.0# to #00, because i don't get how websocket deals with unsigned chars.
-		addConsoleLog('cutoff frequency set to ' + freq + '.');
+		handleConsoleData('cutoff frequency set to ' + freq + '.');
 	}
 }
 
@@ -284,39 +327,34 @@ function updateDialogue() {
 	}
 }
 
-function updateVariables() {
-	// document.getElementById('steps').textContent = Math.round(steps);
-	document.getElementById('dR').textContent = Math.round(dR);
-	document.getElementById('dL').textContent = Math.round(dL);
-	// document.getElementById('qI').textContent = '<' + qI + ', ';
-	// document.getElementById('qJ').textContent = qJ + ', ';
-	// document.getElementById('qK').textContent = qK + '> ';
-	// document.getElementById('qA').textContent = Math.round(qA);
-	// document.getElementById('aX').textContent = '<' + aX + ', ';
-	// document.getElementById('aY').textContent = aY + ', ';
-	// document.getElementById('aZ').textContent = aZ + '> ';
-	// document.getElementById('aA').textContent = Math.round(aA);
-	document.getElementById('laX').textContent = '<' + laX + ', ';
-	document.getElementById('laY').textContent = laY + ', ';
-	document.getElementById('laZ').textContent = laZ + '>';
+function initChecklist() {
+	var content = '<table>';
+	sensors.forEach(element => {
+		content +=
+			'<tr>' +
+			'<td><i id="button_' + element.name + '" class="active mdi mdi-eye"></i></td>' +
+			'<td>' + getIcon(element.icon) + '</td>' +//;
+			'<td>' + element.name + '</td>';//+
+		if (Array.isArray(element.index)) {
+			for (i = 0; i < element.index.length; i++) {
+				var label = Object.keys(indices)[element.index[i]].split('_')[1];
+				content += '<td class="tooltip"><div id="item_' + element.name + i + '" class="item"></div><span class="tooltiptext">' + label + '</span></td>';
+			}
+		}
+		else {
+			var label = Object.keys(indices)[element.index].split('_')[1];
+			content += '<td class="tooltip"><div id="item_' + element.name + '" class="item"></div><span class="tooltiptext"> !!!' + label + '</span></td>';
+		}
+		content += '</tr>';
+	});
 
-	document.getElementById('vX').textContent = '[' + Math.round(vX * 100) / 100 + ', ';
-	document.getElementById('vY').textContent = Math.round(vY * 100) / 100 + ', ';
-	document.getElementById('vZ').textContent = Math.round(vZ * 100) / 100 + ']';
-	// document.getElementById('gX').textContent = '(' + gX + ', ';
-	// document.getElementById('gY').textContent = gY + ', ';
-	// document.getElementById('gZ').textContent = gZ + ') ';
-	document.getElementById('eR').textContent = '(' + Math.round(THREE.Math.radToDeg(eR * 100)) / 100 + ', ';
-	document.getElementById('eP').textContent = Math.round(THREE.Math.radToDeg(eP * 100)) / 100 + ', ';
-	document.getElementById('eY').textContent = Math.round(THREE.Math.radToDeg(eY * 100)) / 100 + ')';
+	content += '</table>';
+	document.getElementById("info").innerHTML = content;
 
-	document.getElementById('pX').textContent = '[' + pX + ', ';
-	document.getElementById('pY').textContent = pY + ', ';
-	document.getElementById('pZ').textContent = pZ + ']';
+}
 
-	document.getElementById('sp').textContent = sp;
-
-	document.getElementById('mv').textContent = mv;
+function getIcon(input) {
+	return '<i class="mdi mdi-' + input + '">';
 }
 
 function LightenDarkenColor(col, amt) {

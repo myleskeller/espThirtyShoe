@@ -89,8 +89,8 @@ function initChart() {
 	});
 	fillTimeAxis();
 
-	initAccelChart();
-	initVelChart();
+	// initAccelChart();
+	// initVelChart();
 }
 
 function changeChartFrameRate() {
@@ -117,19 +117,19 @@ function updateChart(dL, dR) {
 		y: dR // distance
 	});
 
-	updateAccelChart(now);
-	updateVelChart(now);
+	// updateAccelChart(now);
+	// updateVelChart(now);
 }
 
 function fillTimeAxis() {
 	var secondsPerLabel = 5;
-	var limit = duration / 1000;
+	var limit = (duration / 1000);
 
 	var mycss = window.getComputedStyle(document.getElementById("chart-container"));
 	document.getElementById('time-axis').style.width = mycss.getPropertyValue("width");
 	var cellWidth = mycss.getPropertyValue("width").slice(0, -2);
 	cellWidth = cellWidth / ((limit / secondsPerLabel) + 1);
-	cellWidth = Math.round(cellWidth);
+	cellWidth = (Math.floor(cellWidth))-2;
 	// console.log(cellWidth);
 
 	var x = document.getElementsByClassName('time-value');
