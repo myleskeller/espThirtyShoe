@@ -1,65 +1,84 @@
-var sensors = [];
 
-function initPlatform() {
-    //TODO change index to be dynamically allocated instead of hard-coded
+// function initPlatform() {
+// }
 
-    sensors.push(new Accelerometer({
-        index: [23, 24, 25],
-        unit: "m/s^2",
-        precision: 0.000000
-    }));
-    sensors.push(new LinearAccelerometer({
-        index: [0, 1, 2],
-        unit: "m/s^2",
-        precision: 0.000000
-    }));
-    sensors.push(new Classifier({
-        icon: "motion-sensor",
-        index: 12,
-        type: "motion",
-        dictionary: { 1: "Motionless", 3: "Stable", 4: "Moving" }
-    }));
-    sensors.push(new Gyroscope({
-        index: [16, 17, 18],
-        unit: "rad/s",
-        precision: 0.000000
-    }));
-    sensors.push(new Magnometer({
-        index: [19, 20, 21, 22],
-        unit: "µTesla",
-        precision: 0.000000,
-        accuracy: { 0: "Unreliable", 1: "Low", 2: "Medium", 3: "High" }
-    }));
-    sensors.push(new Quaternion({
-        index: [26, 27, 28, 29],
-        unit: "rad",
-        precision: 0.000000,
-    }));
-    sensors.push(new Euler({
-        index: [8, 9, 10],
-        unit: "rad",
-        precision: 0.000000,
-    }));
-   
-    sensors.push(new Distance({
-        index: 6,
-        unit: "mm",
-        precision: 0,
-        limits: [0, 1000],
-        orientation: "right"
-    }));
-    sensors.push(new Distance({
-        index: 7,
-        unit: "mm",
-        precision: 0,
-        limits: [0, 1000],
-        orientation: "left"
-    }));
-     //TODO sensors get super-butthurt when you don't initialize them with an index value.
-    // sensors.push(new Gravity({
-        // location: [0, 0, 0]
-    // }));
-    // sensors.push(new Step());
 
-    // console.log(sensors);
+//* simple platform class to get easier access to global variables
+class Platform {
+    constructor(input) {
+        this.microcontrollers = [];
+        this.sensors = [];
+        // this.num_colors = 0;
+        this.colors = [];
+
+        if (input) {
+            this.updateSensorList();
+            if (Array.isArray(input)) {
+                input.forEach(microcontroller => {
+                    this.assignName(microcontroller);
+                });
+            } else {
+                this.microcontrollers.push(input);
+            }
+        }
+    }
+
+    assignColors() {
+        var colors_needed = this.colors.length + 1;
+        // console.log(colors_needed)
+        this.colors = randomColor({ luminosity: 'dark', count: colors_needed });
+
+        // console.log(this.sensors.length);
+        for (var i = 0; i < this.sensors.length; i++) {
+            this.sensors[i].color = this.colors[i];
+            console.log(this.sensors[i].color);
+        }
+        // console.log(this.colors)
+    }
+
+    assignName(microcontroller) {
+        //* if a name wasn't provided, generate one procedurally
+        if (!microcontroller.name) {
+            microcontroller.name = microcontroller.constructor.name;
+        }
+        //* checks if name already exists in array and appends to avoid conflicts
+        var duplicate_found = this.microcontrollers.find(x => x.name == microcontroller.name);
+        if (duplicate_found != undefined) { //if DISTANCE_[N] exists, replace with DISTANCE_[N+1]
+            var num = parseInt(duplicate_found.name.charAt(duplicate_found.name.length - 1)); //integer at the end of duplicate sensor
+            if (!num)
+                num = 1;
+            else
+                num++;
+            microcontroller.name = microcontroller.name + num;
+        }
+    }
+
+    addMicrocontroller(_microcontroller) { //! must be called AFTER sensors are added
+        this.assignName(_microcontroller);
+        this.microcontrollers.push(_microcontroller);
+        this.updateSensorList();
+    }
+
+    addMicrocontrollers(_microcontrollers) { //! must be called AFTER sensors are added
+        _microcontrollers.forEach(microcontroller => {
+            this.assignName(microcontroller);
+            this.microcontrollers.push(microcontroller);
+            this.updateSensorList();
+        });
+    }
+
+    updateSensorList() { //TODO needs to be updated to check for ids instead of names
+        this.microcontrollers.forEach(_microcontroller => {
+            _microcontroller.sensors.forEach(_sensor => {
+                this.sensors.push(_sensor);
+            }, this);
+        }, this);
+    }
+}
+
+function getSensorIndexByName(name) {
+    return platform.sensors.findIndex(x => x.name == name);
+}
+function getSensorIndexByID(id) {
+    return platform.sensors.findIndex(x => x.id == id);
 }

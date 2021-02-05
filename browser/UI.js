@@ -75,14 +75,15 @@ function addEventListeners() {
 		}
 	});
 
-	for (i = 0; i < sensors.length; i++) {
+
+	for (i = 0; i < platform.sensors.length; i++) {
 		//TODO add procedural adding of click listeners to toggle state of sensors
-		var _name = sensors[i].name;
+		var _name = platform.sensors[i].name;
 		var button_element = 'button_' + _name;
 
 		var _button_element = document.getElementById(button_element);
 		addMouseListeners(_button_element);
-		console.log("added event listeners for " + sensors[i].name)
+		console.log("added event listeners for " + platform.sensors[i].name)
 
 		_button_element.addEventListener("click", function (event) {
 			//* toggle state of button
@@ -100,7 +101,7 @@ function addEventListeners() {
 			// var _sensor = sensors.filter(obj => {
 			// 	return obj.name === __name;
 			// })
-			var _sensor = sensors.find(x => x.name == __name);
+			var _sensor = platform.sensors.find(x => x.name == __name);
 			this.classList.toggle('active');
 
 			// console.log("who dis?" + _sensor.name)
@@ -328,8 +329,9 @@ function updateDialogue() {
 }
 
 function initChecklist() {
+	console.log(platform.sensors) 
 	var content = '<table>';
-	sensors.forEach(element => {
+	platform.sensors.forEach(element => {
 		content +=
 			'<tr>' +
 			'<td><i id="button_' + element.name + '" class="active mdi mdi-eye"></i></td>' +
@@ -343,7 +345,7 @@ function initChecklist() {
 		}
 		else {
 			var label = Object.keys(indices)[element.index].split('_')[1];
-			content += '<td class="tooltip"><div id="item_' + element.name + '" class="item"></div><span class="tooltiptext"> !!!' + label + '</span></td>';
+			content += '<td class="tooltip"><div id="item_' + element.name + '" class="item"></div><span class="tooltiptext">' + label + '</span></td>';
 		}
 		content += '</tr>';
 	});

@@ -20,6 +20,7 @@
 		var data2Color = "#6C6E02";
 	</script>
 
+	<script src="./randomColor.min.js"></script>
 	<script src="./styles.js"></script>
 	<script src="./three.min.js"></script>
 	<script src="./OrbitControls.js"></script>
@@ -28,20 +29,18 @@
 	<script src="./STLLoader.js"></script>
 	<script src="./Chart.bundle.min.js"></script>
 	<script src="./chartjs-plugin-streaming.min.js"></script>
-	<!-- <script src="./smoothie.js"></script> -->
 	<script src="./FileSaver.min.js"></script>
 	<script src="./xlsx.mini.min.js"></script>
 	<script src="./fileIO.js"></script>
 	<script src="./UI.js"></script>
 	<script src="./chart.js"></script>
-	<!-- <script src="./kalman.min.js"></script> -->
 	<script src="./geometry.js"></script>
 	<script src="./graphics.js"></script>
 	<script src="./reconnecting-websocket.min.js"></script>
 	<script src="./WebSocket.js"></script>
 	<script src="./sensor.js"></script>
-	<script src="platform.js"></script>
-
+	<script src="./microcontroller.js"></script>
+	<script src="./platform.js"></script>
 
 	<title>ESP-THIRTY-SHOE</title>
 
@@ -178,30 +177,22 @@
 			</table>
 		</div>
 
-		<div class="bordered" id="chart-silhouette">
-		</div>
+		<!-- <div class="bordered" id="chart-silhouette">
+		</div> -->
 		<div id="chart-container">
-			<canvas id="chart">
+			<!-- <canvas id="chart"> -->
 		</div>
-
-		<!-- <div id="accel-chart-container">
-		<span>Acceleration</span></br>
-		<canvas id="accelChart" height="125" width="700">
-	</div>
-
-	<div id="vel-chart-container">
-		<span>Velocity</span></br>
-		<canvas id="velChart" height="125" width="700">
-	</div> -->
 
 		<div class="bordered" id="console">
 			<div id="logs"></div>
 		</div>
 
 		<div id=time-axis-container>
-			<div id=time-axis>
-				<div class="time-value"></div>
-			</div>
+			<table>
+				<tr id=time-axis>
+					<!-- <div class="time-value"></div> -->
+				</tr>
+			</table>
 		</div>
 
 
@@ -209,10 +200,74 @@
 </body>
 <script>
 	function init() {
+
+		window.platform = new Platform();
+		var uC1 = new Controller();
+		// window.platform = new Platform(uC1);
+
+		uC1.addSensor(new Accelerometer({
+			index: [23, 24, 25],
+			unit: "m/s^2",
+			precision: 0.000000,
+			// isGraphed: true
+		}));
+		uC1.addSensor(new LinearAccelerometer({
+			index: [0, 1, 2],
+			unit: "m/s^2",
+			precision: 0.000000
+		}));
+		uC1.addSensor(new Classifier({
+			icon: "motion-sensor",
+			index: 12,
+			type: "motion",
+			dictionary: { 1: "Motionless", 3: "Stable", 4: "Moving" }
+		}));
+		uC1.addSensor(new Gyroscope({
+			index: [16, 17, 18],
+			unit: "rad/s",
+			precision: 0.000000
+		}));
+		uC1.addSensor(new Magnometer({
+			index: [19, 20, 21, 22],
+			unit: "µTesla",
+			precision: 0.000000,
+			accuracy: { 0: "Unreliable", 1: "Low", 2: "Medium", 3: "High" }
+		}));
+		uC1.addSensor(new Quaternion({
+			index: [26, 27, 28, 29],
+			unit: "rad",
+			precision: 0.000000,
+		}));
+		uC1.addSensor(new Euler({
+			index: [8, 9, 10],
+			unit: "rad",
+			precision: 0.000000,
+		}));
+		uC1.addSensor(new Distance({
+			index: 6,
+			unit: "mm",
+			precision: 0,
+			limits: [0, 1000],
+			orientation: "right",
+			isGraphed: true
+		}));
+		uC1.addSensor(new Distance({
+			index: 7,
+			unit: "mm",
+			precision: 0,
+			limits: [0, 1000],
+			orientation: "left",
+			isGraphed: true
+		}));
+
+		platform.addMicrocontroller(uC1);
+
+
 		initChart();
 		initWebSocket("127.0.0.1:81");
 		initGraphics();
-		initPlatform();
+		//TODO initConsole();
+		// initPlatform();
 		initChecklist();
 		addEventListeners();
 	}

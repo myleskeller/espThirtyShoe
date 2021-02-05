@@ -1,7 +1,7 @@
 .bordered {	
-	border: 1px !important;
+	/* border: 1px !important;
 	border-color: white !important;
-	border-style: solid !important;
+	border-style: solid !important; */
 }
 
 body {
@@ -45,6 +45,14 @@ th {
 	transition: all 0.3s ease;
 }
 
+.icon-bar .mdi {
+	cursor: pointer;
+}
+
+.icon-bar .mdi .tooltiptext{
+	cursor: default;
+}
+
 #console {
 	display: flex;
 	flex-direction: column-reverse;
@@ -57,7 +65,7 @@ th {
 	position: absolute;
 	bottom: 10px;
 	left: 10px;
-	pointer-events: none;
+	/* pointer-events: none; */
 }
 
 #dialogue {
@@ -85,7 +93,12 @@ th {
 	z-index: 100;
 	display: block;
 	transition: all 0.3s ease;
-	/* pointer-events: none; */
+	pointer-events: none;
+	cursor: default;
+}
+
+#info table {
+	pointer-events: all;
 }
 
 .item{
@@ -103,10 +116,10 @@ td{
 	height: calc(33% - 0px) !important;
 	width: calc(66% - 10px) !important;
 	z-index: 100;
-	pointer-events: none;
+	/* pointer-events: none; */
 }
 
-#chart-silhouette {
+/* #chart-silhouette {
 	position: absolute;
 	bottom: 10px;
 	right: 10px;
@@ -114,7 +127,7 @@ td{
 	width: calc(66% - 5px) !important;
 	z-index: 100;
 	pointer-events: none;
-}
+} */
 
 #accel-chart-container {
 	position: absolute;
@@ -136,23 +149,29 @@ td{
 	pointer-events: none;
 }
 
-#chart {
-	height: 100%;
+/* #chart {
+	height: 100% !important;
+	/* width: 100% !important; */
 	/* height: calc(33% + 10px); */
 	/* width: calc(50% + 10px); */
-}
+/*} */
 
 .time-value {
 	float: left;
 }
 
-#time-axis {
+#time-axis-container {
 	display: block;
 	position: absolute;
 	bottom: 10px;
-	right: 10px;
+	right: -40px;
 	font-size: 0.5em;
 	z-index: 102;
+}
+
+#time-axis-container table{
+	width: 100%;
+	table-layout: fixed;
 }
 
 .tooltip {
@@ -201,6 +220,10 @@ td{
 	transition: opacity 0.5s ease;
 	/* border-radius:5px; */
 	background:#000;
+}
+
+#info .mdi-eye {
+	cursor: pointer;
 }
 
 .mdi-stop-circle {

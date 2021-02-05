@@ -1,7 +1,16 @@
+//TODO change index to be dynamically allocated instead of hard-coded
+//TODO sensors get super-butthurt when you don't initialize them with an index value.
+// sensors.push(new Gravity({
+// location: [0, 0, 0]
+// }));
+// sensors.push(new Step());
+// console.log(sensors);
+
 class Sensor {
     constructor(input) {
         this.index = input.index;
-        this.name = this.assignName(input.name);
+        if (input.name) this.name = input.name;
+        // this.name = this.assignName(input.name);
         this.accuracy = this.assignAccuracy(input.accuracy);
         this.limits = this.assignExtrema(input.limits);
         this.type = input.type;
@@ -10,9 +19,16 @@ class Sensor {
         this.location = input.location;
         this.mesh = null;
         this.icon = input.icon;
-        this.visible = true;
+        this.visible = true; //? redundant to 'isRendered'?
         this.value;
         this.value_old;
+        this.parent_node; 
+        this.parent_microcontroller; 
+        this.duty_cycle;
+        this.isGraphed = input.isGraphed;
+        this.isRendered = input.isRendered;
+        this.color = "#808080"; 
+
 
         if (Array.isArray(this.index)) {
             this.value = [];
@@ -32,7 +48,39 @@ class Sensor {
         scene.getObjectByName(object).attach(this.mesh);
     }
 
-    validateOutput() {
+    // graphValue(){
+    // //     if (sensor.isGraphed == true){
+    // //         var now = Date.now();
+	// // buf[id][0].push({ //left
+	// // 	x: now, // timestamp
+	// // 	y: dL // distance
+	// // });
+    // //     }
+    // }
+
+    updateDutyCycle() { //TODO add power reduction functionality
+        //default callback that does nothing.
+        //limit support to:
+        //  proportional 
+        //  piecewise-linear
+        //  "custom"
+        // rip programmer
+
+        // accel. and light sensor
+        // only sample light if accel is... [3 ranges];
+        // time windnow t, ...
+        // callback type (proportional/piecewise
+        //piecewise
+        // array[3] -> bounds of range -> [0.5,1,2]
+        // proportional:
+        // y=alpha(X)+c
+        // would need an update loop (probably validateInput())
+        // sending alpha, c
+        // alpha = porportionality factor
+        // c = offset 
+    }
+
+    updateValue() {
         var output;
         if (this.limits) { //* if there are extrema limits set
             if (Array.isArray(this.index)) {
@@ -112,30 +160,6 @@ class Sensor {
         }
     }
 
-    assignName(_name) {
-        //* if a name wasn't provided, generate one procedurally
-        if (!_name) {
-            if (Array.isArray(this.index)) {
-                _name = Object.keys(indices)[this.index[0]].split('_')[0];
-            }
-            else {
-                _name = Object.keys(indices)[this.index].split('_')[0];
-            }
-        }
-
-        //* checks if name already exists in array and appends to avoid conflicts
-        var duplicate_found = sensors.find(x => x.name == _name);
-        if (duplicate_found != undefined) { //if DISTANCE(x) exists, replace with DISTANCE(x+1)
-            var num = parseInt(duplicate_found.name.charAt(duplicate_found.name.length - 1)); //integer at the end of duplicate sensor
-            if (!num)
-                num = 1;
-            else
-                num++;
-            _name = _name + num;
-        }
-        return _name;
-    }
-
     assignAccuracy(dictionary) {
         if (dictionary) {
             //* assign last index value to accuracy parameter
@@ -178,7 +202,7 @@ class Classifier extends Sensor {
         if (!this.icon) this.icon = "shape-outline";
         this.dictionary = input.dictionary;
     }
-    validateOutput() {
+    updateValue() {
         this.value_old = this.value;
         this.value = this.dictionary[message_array[this.index]];
     }

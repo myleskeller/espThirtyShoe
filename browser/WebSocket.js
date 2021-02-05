@@ -1,8 +1,6 @@
 //TODO convert ASCII websocket to binary 
 //TODO make communication follow standardized format
-//TODO rework graph to accommodate all sensors
 //TODO integrate object coordinates/orientation into 3d positioning
-//TODO fix the bs that broke with the node server for some reason
 //TODO change sensors index to be dynamically allocated instead of hard-coded 
 
 
@@ -82,13 +80,14 @@ function initWebSocket(websocket_address) {
 }
 
 function updateSensors() {
-	sensors.forEach(element => {
-		element.validateOutput();
+	platform.sensors.forEach(element => {
+		element.updateValue();
 
 		if (page_visible) {
 			element.updateUIValue();
 			// element.updateGraphics(); //TODO massive overhaul of mesh and variable handling required.
-			updateChart(sensors[7].value, sensors[8].value);
+			// updateChart(); 
+			// updateChart(platform.sensors[7].value, platform.sensors[8].value); 
 			// colorScaleValue(dL);
 			// colorScaleValue(dR);
 		}
