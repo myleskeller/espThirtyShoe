@@ -83,7 +83,7 @@ function addEventListeners() {
 
 		var _button_element = document.getElementById(button_element);
 		addMouseListeners(_button_element);
-		console.log("added event listeners for " + platform.sensors[i].name)
+		// console.log("added event listeners for " + platform.sensors[i].name)
 
 		_button_element.addEventListener("click", function (event) {
 			//* toggle state of button
@@ -248,14 +248,16 @@ function addEventListeners() {
 
 function addMouseListeners(element) {
 	element.addEventListener("mouseover", function (event) {
+		element.oldColor = element.style.color;
 		element.style.color = secondaryColor;
 	});
 	element.addEventListener("mouseout", function (event) {
-		if (element.classList.contains("active")) {
-			element.style.color = highEmphasisColor;
-		} else {
-			element.style.color = disabledColor;
-		}
+		element.style.color = element.oldColor;
+		// if (element.classList.contains("active")) {
+		// 	element.style.color = highEmphasisColor;
+		// } else {
+		// 	element.style.color = disabledColor;
+		// }
 	});
 }
 
@@ -265,7 +267,7 @@ function handleConsoleData(log) {
 }
 
 function changeUpdateSpeed() {
-	rate = prompt("sensor polling rate (in milliseconds):", rate);
+	var rate = prompt("sensor polling rate (in milliseconds):", rate);
 	if (rate == null || rate == "") {
 		connection.send('r0');
 		handleConsoleData("polling rate set to realtime.");
@@ -273,7 +275,7 @@ function changeUpdateSpeed() {
 		connection.send('r' + rate);
 		handleConsoleData('polling rate set to ' + rate + '.');
 	}
-	changeChartFrameRate();
+	changeChartFrameRate(rate);
 }
 
 function handleConsoleData(log) {
@@ -328,14 +330,15 @@ function updateDialogue() {
 	}
 }
 
-function initChecklist() {
-	console.log(platform.sensors) 
+function initInfoPanel() {
+	console.log(platform.sensors)
 	var content = '<table>';
 	platform.sensors.forEach(element => {
+		var button_id = "button_" + element.name;
 		content +=
 			'<tr>' +
-			'<td><i id="button_' + element.name + '" class="active mdi mdi-eye"></i></td>' +
-			'<td>' + getIcon(element.icon) + '</td>' +//;
+			'<td><i id="' + button_id + '" class="active mdi mdi-eye"></i></td>' +
+			'<td>' + getIcon(element.icon, element.color) + '</td>' +//;
 			'<td>' + element.name + '</td>';//+
 		if (Array.isArray(element.index)) {
 			for (i = 0; i < element.index.length; i++) {
@@ -355,8 +358,8 @@ function initChecklist() {
 
 }
 
-function getIcon(input) {
-	return '<i class="mdi mdi-' + input + '">';
+function getIcon(icon, color) {
+	return '<i class="mdi mdi-' + icon + '" style="color:' + color + '">';
 }
 
 function LightenDarkenColor(col, amt) {

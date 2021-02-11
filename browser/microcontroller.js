@@ -1,19 +1,21 @@
 class Microcontroller {
     constructor(input) {
         this.sensors = [];
+        // this.name = this.assignName();
         if (input) {
             if (input.name) this.name = input.name;
             if (input.sensors) this.sensors = input.sensors;
             this.location = input.location;
             this.icon = input.icon;
         }
+        
+        platform.addMicrocontroller(this);
     }
 
     attachTo(object) {
         scene.getObjectByName(object).attach(this.mesh);
     }
 
-    //* should address the single controller scenario by passing sensors to automatically created node object
     addSensor(sensor) {
         this.assignName(sensor);
         sensor.node_parent = this.name;
@@ -21,12 +23,13 @@ class Microcontroller {
         platform.sensors.push(sensor);
         platform.assignColors();
     }
-    //* should address the single controller scenario by passing sensors to automatically created node object
+
     addSensors(_sensors) {
         _sensors.forEach(sensor => {
             addSensor(sensor);
         });
     }
+
     getSensorIndexByName(sensor) {
         return platform.sensors.findIndex(x => x.name == sensor.name);
     }
@@ -35,8 +38,6 @@ class Microcontroller {
     }
     //* id = "[node_name]+[sensor_name]"
     assignID(sensor) {
-        //* if a name wasn't provided, generate one procedurally
-
         sensor.id = sensor.node_parent + '_' + sensor.name; //* appends parent node to front of name.
 
         //* checks if name already exists in array and appends to avoid conflicts (shouldn't happen)
@@ -74,6 +75,7 @@ class Microcontroller {
             else
                 num++;
             sensor.name = sensor.name + num;
+            duplicate_found.name = duplicate_found.name + 0;
         }
     }
 }
@@ -82,7 +84,6 @@ class Controller extends Microcontroller {
     constructor(input) {
         super(input);
         if (input) {
-            // this.neighbors = input.neighbors; //TODO someday have the controllers communicate in a more mesh network kind of way.
             if (!input.icon) this.icon = "hubspot";
             if (input.nodes)
                 this.nodes = input.nodes; //holds nodes that report to this particular microcontroller

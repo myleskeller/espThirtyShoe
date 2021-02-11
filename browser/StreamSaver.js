@@ -14,7 +14,6 @@
   const test = fn => { try { fn() } catch (e) {} }
   const ponyfill = window.WebStreamsPolyfill || {}
   const isSecureContext = window.isSecureContext
-  // TODO: Must come up with a real detection test (#69)
   let useBlobFallback = /constructor/i.test(window.HTMLElement) || !!window.safari || !!window.WebKitPoint
   const downloadStrategy = isSecureContext || 'MozAppearance' in document.documentElement.style
     ? 'iframe'
@@ -261,7 +260,6 @@
         // only after previous writes have succeeded, and never after
         // close or abort is called.
 
-        // TODO: Kind of important that service worker respond back when
         // it has been written. Otherwise we can't handle backpressure
         // EDIT: Transfarable streams solvs this...
         channel.port1.postMessage(chunk)

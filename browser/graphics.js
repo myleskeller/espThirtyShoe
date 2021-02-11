@@ -12,7 +12,7 @@ manager.onLoad = function () {
 	initGraphicsAfterLoading();
 };
 
-function initGraphics() {
+function initRender() {
 	scene.background = new THREE.Color(backgroundColor);
 	createMeshes(scene); //calls initGraphicsAfterLoading() after model load is complete
 	// createGravityVector(scene);
@@ -20,7 +20,7 @@ function initGraphics() {
 
 function initGraphicsAfterLoading() {
 	const container = document.createElement('div');
-	container.id = "three-dimensional-visualizer";
+	container.id = "render-container";
 	// container.classList.add("item"); //should add it to the biggest box in this golden ratio garbage..
 	// container.classList.add("a"); //should add it to the biggest box in this golden ratio garbage..
 	// document.body.appendChild(container);
@@ -161,7 +161,6 @@ function createGravityVector(object) { //if attaching to shoe doesn't work, deal
 	var line = new THREE.Mesh(gravityLine.geometry, linematerial); // this syntax could definitely be improved!
 	line.name = "gravity";
 	line.scale.x = line.scale.y = line.scale.z = 100;
-	// line.pivot = new THREE.Vector3(0, 0, 0); //set shoe model pivot point to IMU location
 	object.attach(line);
 }
 

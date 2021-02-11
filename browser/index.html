@@ -6,6 +6,7 @@
 		content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
 	<link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
+	<link rel="stylesheet" href="./uPlot.min.css">
 	<link rel="stylesheet" href="./styles.css">
 	<script>
 		var highEmphasisColor = "rgba(255, 255, 255, 0.87)";
@@ -29,6 +30,7 @@
 	<script src="./STLLoader.js"></script>
 	<script src="./Chart.bundle.min.js"></script>
 	<script src="./chartjs-plugin-streaming.min.js"></script>
+	<!-- <script src="./uPlot.iife.js"></script> -->
 	<script src="./FileSaver.min.js"></script>
 	<script src="./xlsx.mini.min.js"></script>
 	<script src="./fileIO.js"></script>
@@ -55,7 +57,7 @@
 	</div>
 
 	<div class="container">
-		<div class="bordered icon-bar">
+		<div class="icon-bar">
 			<i id="button_expandSettingsMenu" class="mdi mdi-cog-outline tooltip"><span class="tooltiptext">expand
 					settings</span></i>
 			<i id="button_toggleAccelerometerMotion" class="active mdi mdi-axis-arrow tooltip"><span
@@ -94,103 +96,19 @@
 
 		</div>
 
-		<div class="bordered" id="info">
-			<table>
-				<!-- <tr>
-				<th colspan="4">Rotation Vector (Radians)</th>
-			</tr>
-			<tr class="data">
-				<td id="qI">0</td>
-				<td id="qJ">0</td>
-				<td id="qK">0</td>
-				<td id="qA">0</td>
-			</tr> -->
-
-				<tr>
-					<th colspan="3">Euler Angle (Degrees)</th>
-				</tr>
-				<tr class="data">
-					<td id="eR">0</td>
-					<td id="eP">0</td>
-					<td id="eY">0</td>
-				</tr>
-
-				<!-- <tr>
-				<th colspan="3">Gyroscope (Degrees)</th>
-			</tr>
-			<tr class="data">
-				<td id="gX">0</td>
-				<td id="gY">0</td>
-				<td id="gZ">0</td>
-			</tr> -->
-
-				<tr>
-					<th colspan="4">Linear Acceleration (mm/s²)</th>
-				</tr>
-				<tr class="data">
-					<td id="laX">0</td>
-					<td id="laY">0</td>
-					<td id="laZ">0</td>
-				</tr>
-
-				<th colspan="4">Velocity (mm/sample_period)</th>
-				</tr>
-				<tr class="data">
-					<td id="vX">0</td>
-					<td id="vY">0</td>
-					<td id="vZ">0</td>
-				</tr>
-
-				<tr>
-					<th colspan="3">Position Dispalcement from Origin (mm)</th>
-				</tr>
-				<tr class="data">
-					<td id="pX">0</td>
-					<td id="pY">0</td>
-					<td id="pZ">0</td>
-					<!-- <td id="aA">0</td> -->
-				</tr>
-
-				<tr>
-					<th colspan="2">Distance (mm)</th>
-				</tr>
-				<tr class="data">
-					<td id="dL">0</td>
-					<td id="dR">0</td>
-				</tr>
-				<tr>
-					<th>Sample Period (s)</th>
-					<th> </th>
-					<th>Movement</th>
-				</tr>
-				<tr class="data">
-					<td id="sp">0</td>
-					<td> </td>
-					<td id="mv">...</td>
-				</tr>
-				<!-- <tr>
-				<th>Steps</th>
-			</tr>
-			<tr class="data">
-				<td id="steps">0</td>
-			</tr> -->
-			</table>
+		<div id="info">
 		</div>
 
-		<!-- <div class="bordered" id="chart-silhouette">
-		</div> -->
 		<div id="chart-container">
-			<!-- <canvas id="chart"> -->
 		</div>
 
-		<div class="bordered" id="console">
+		<div id="console">
 			<div id="logs"></div>
 		</div>
 
 		<div id=time-axis-container>
 			<table>
 				<tr id=time-axis>
-					<!-- <div class="time-value"></div> -->
 				</tr>
 			</table>
 		</div>
@@ -200,16 +118,31 @@
 </body>
 <script>
 	function init() {
-
-		window.platform = new Platform();
-		var uC1 = new Controller();
+		initPlatform();
+		// var uC1 = new Controller();
 		// window.platform = new Platform(uC1);
+		// platform.addMicrocontroller(uC1);
+		// window.platform = new Platform({
+		// 	microcontrollers: [uC1, uC2]
+		// });
+		// platform.addMicrocontroller(uC1);
 
-		uC1.addSensor(new Accelerometer({
+		var uC1 = (new Controller({
+			name: "uC",
+			role: "dual"
+		}));
+
+		var uC2 = (new Controller({
+			name: "uC",
+			role: "dual"
+		}));
+
+		uC2.addSensor(new Accelerometer({
 			index: [23, 24, 25],
 			unit: "m/s^2",
-			precision: 0.000000,
-			// isGraphed: true
+			precision: 0.00,
+			isGraphed: true,
+			frequency: 20
 		}));
 		uC1.addSensor(new LinearAccelerometer({
 			index: [0, 1, 2],
@@ -243,13 +176,20 @@
 			unit: "rad",
 			precision: 0.000000,
 		}));
+		var freq = 20;
 		uC1.addSensor(new Distance({
 			index: 6,
 			unit: "mm",
 			precision: 0,
 			limits: [0, 1000],
 			orientation: "right",
-			isGraphed: true
+			isGraphed: true,
+			duty_cycle:
+			{
+				functions: [0.25, 0.5, 0.75],
+				domains: [freq / 10, freq / 2, freq],
+				reference_sensor_id: "uC1_ACCELEROMETER"
+			}
 		}));
 		uC1.addSensor(new Distance({
 			index: 7,
@@ -260,15 +200,11 @@
 			isGraphed: true
 		}));
 
-		platform.addMicrocontroller(uC1);
-
-
-		initChart();
+		initChart(30, 250);
 		initWebSocket("127.0.0.1:81");
-		initGraphics();
-		//TODO initConsole();
-		// initPlatform();
-		initChecklist();
+		initRender();
+		// initConsole();
+		initInfoPanel();
 		addEventListeners();
 	}
 </script>

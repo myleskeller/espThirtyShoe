@@ -60,7 +60,7 @@ function doitCSV() {
 	}
 
 	//! WHY DOES THIS LOOK CORRECT IN THE CONSOLE BUT NOT IN THE CSV FILE???!
-	//TODO see if you can manually remove that CR or LB or whatever from the csv prior to writing?
+	//TODO remove that CR / LB from the csv prior to writing
 	saveAs(new Blob([s2ab(csv)], { type: "application/octet-stream" }), "data.csv");
 }
 

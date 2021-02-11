@@ -1,6 +1,3 @@
-//? get calibration/tare working
-//? implement hardware stationary detection
-//? make sure tare is correct
 //TODO rework quaternion as default representation of orientation
 //TODO change camera to focus on object rather than fixed viewpoint
 //TODO see if quaternion yields better results than euler angles
@@ -90,7 +87,7 @@ function updateAttitude(_shoe) {
 	quat1 = new THREE.Quaternion(sensors[4].value[3], sensors[4].value[0], sensors[4].value[1], sensors[4].value[2]);
 	quat2 = new THREE.Quaternion(1, 0, 0, 0);
 	// quat2.setFromAxisAngle ( axis : Vector3, angle : Float ); 
-	//TODO figure out how to properly offset output quaternion to get correct rendering of orientation
+	//TODO properly offset output quaternion to get correct rendering of orientation
 	// quat2.setFromAxisAngle (new THREE.Vector3(-1, 0, 0), THREE.Math.degToRad(270)); //-roll
 	// quat2.setFromAxisAngle (new THREE.Vector3(1, 0, 0), THREE.Math.degToRad(270)); //-roll
 	// quat2.setFromAxisAngle (new THREE.Vector3(0, -1, 0), THREE.Math.degToRad(270)); //-pitch

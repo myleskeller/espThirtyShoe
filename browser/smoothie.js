@@ -726,7 +726,6 @@
         chartMinValue = Number.NaN;
 
     for (var d = 0; d < this.seriesSet.length; d++) {
-      // TODO(ndunn): We could calculate / track these values as they stream in.
       var timeSeries = this.seriesSet[d].timeSeries;
       if (timeSeries.disabled) {
           continue;

@@ -10,6 +10,7 @@ class Sensor {
     constructor(input) {
         this.index = input.index;
         if (input.name) this.name = input.name;
+        if (input.duty_cycle) assignDutyCycle(input.duty_cycle.functions,input.duty_cycle.domains, input.duty_cycle.reference_sensor_id);
         // this.name = this.assignName(input.name);
         this.accuracy = this.assignAccuracy(input.accuracy);
         this.limits = this.assignExtrema(input.limits);
@@ -22,12 +23,14 @@ class Sensor {
         this.visible = true; //? redundant to 'isRendered'?
         this.value;
         this.value_old;
-        this.parent_node; 
-        this.parent_microcontroller; 
-        this.duty_cycle;
+        this.parent_node;
+        this.parent_microcontroller;
+        this.frequency; //* taken in as Hz, converted to samples/sec
+        this.frequency_old;
+        this.reference_sensor;
         this.isGraphed = input.isGraphed;
         this.isRendered = input.isRendered;
-        this.color = "#808080"; 
+        this.color = "#808080";
 
 
         if (Array.isArray(this.index)) {
@@ -48,17 +51,9 @@ class Sensor {
         scene.getObjectByName(object).attach(this.mesh);
     }
 
-    // graphValue(){
-    // //     if (sensor.isGraphed == true){
-    // //         var now = Date.now();
-	// // buf[id][0].push({ //left
-	// // 	x: now, // timestamp
-	// // 	y: dL // distance
-	// // });
-    // //     }
-    // }
 
-    updateDutyCycle() { //TODO add power reduction functionality
+    updateDutyCycle() { //* assert( formulas[].length == domains[].length )
+        //TODO add power reduction functionality
         //default callback that does nothing.
         //limit support to:
         //  proportional 
@@ -78,6 +73,43 @@ class Sensor {
         // sending alpha, c
         // alpha = porportionality factor
         // c = offset 
+
+        // this.duty_cycle = Piecewise(formulas, domains);
+        // this.duty_cycle = (reference_sensor_id.value);
+
+        this.frequency_old = this.frequency;
+        this.frequency = this.duty_cycle(); //? should this have parentheses??
+
+        if (this.frequency != this.frequency_old) {
+            //* byte telling uC we want to update specific sensor polling rate
+            var message = "*";
+            //* byte telling uC which sensor
+            message += sensors[getSensorIndexByID(reference_sensor_id)].index;
+            //* byte telling uC what to set the polling rate to
+            message += sensors[getSensorIndexByID(reference_sensor_id)].frequency;
+            connection.send(message);
+        }
+    }
+
+    assignDutyCycle(formulas, domains, reference_sensor_id) { //* assert( formulas[].length == domains[].length )
+        this.reference_sensor = reference_sensor_id;
+        // function Piecewise(xs, ys) {
+        this.duty_cycle = function () {
+            var xs = formulas;
+            var ys = domains;
+            //bisect
+            var lo = 0, hi = xs.length - 1;
+            while (hi - lo > 1) {
+                var mid = (lo + hi) >> 1;
+                if (sensors[getSensorIndexByID(this.reference_sensor)].value < xs[mid]) hi = mid;
+                else lo = mid;
+            }
+            //project
+            return ys[lo] + (ys[hi] - ys[lo]) / (xs[hi] - xs[lo]) * (x - xs[lo]);
+        };
+        // }
+
+        this.frequency = this.duty_cycle(reference_sensor_id);
     }
 
     updateValue() {
@@ -139,7 +171,7 @@ class Sensor {
     updateUIValue() {
         if (Array.isArray(this.index)) {
             for (i = 0; i < this.index.length; i++) {
-                document.getElementById("item_" + this.name + i).innerText = this.value[i];
+                document.getElementById("item_" + this.name + i).innerText = this.value[i]; //TODO these references can be updated to use the new IDs
             }
         }
         else {
