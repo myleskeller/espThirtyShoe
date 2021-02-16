@@ -153,7 +153,7 @@ var uPlot = (function () {
 	};
 
 	// this ensures that non-temporal/numeric y-axes get multiple-snapped padding added above/below
-	// TODO: also account for incrs when snapping to ensure top of axis gets a tick & value
+	// todo: also account for incrs when snapping to ensure top of axis gets a tick & value
 	function rangeNum(_min, _max, mult, extra) {
 		if (isObj(mult))
 			{ return _rangeNum(_min, _max, mult); }
@@ -892,7 +892,7 @@ var uPlot = (function () {
 		));
 	}
 
-	// TODO: will need to accept spaces[] and pull incr into the loop when grid will be non-uniform, eg for log scales.
+	// todo: will need to accept spaces[] and pull incr into the loop when grid will be non-uniform, eg for log scales.
 	// currently we ignore this for months since they're *nearly* uniform and the added complexity is not worth it
 	function timeAxisVals(tzDate, stamps) {
 		return (self, splits, axisIdx, foundSpace, foundIncr) => {
@@ -1447,7 +1447,7 @@ var uPlot = (function () {
 		if (toX > fromX) {
 			var prevGap = gaps[gaps.length - 1];
 
-			if (prevGap && prevGap[0] == fromX)			// TODO: gaps must be encoded at stroke widths?
+			if (prevGap && prevGap[0] == fromX)			// todo: gaps must be encoded at stroke widths?
 				{ prevGap[1] = toX; }
 			else
 				{ gaps.push([fromX, toX]); }
@@ -1948,7 +1948,7 @@ var uPlot = (function () {
 
 					var xVal = scaleX.distr == 2 ? i : dataX[i];
 
-					// TODO: all xPos can be pre-computed once for all series in aligned set
+					// todo: all xPos can be pre-computed once for all series in aligned set
 					var xPos = valToPosX(xVal, scaleX, xDim, xOff);
 					var yPos = valToPosY(yVal, scaleY, yDim, yOff);
 
@@ -1995,7 +1995,7 @@ var uPlot = (function () {
 	var snapTimeX = snapNumX;
 
 	// this ensures that non-temporal/numeric y-axes get multiple-snapped padding added above/below
-	// TODO: also account for incrs when snapping to ensure top of axis gets a tick & value
+	// todo: also account for incrs when snapping to ensure top of axis gets a tick & value
 	function snapNumY(self, dataMin, dataMax) {
 		return dataMin == null ? nullMinMax : rangeNum(dataMin, dataMax, 0.1, true);
 	}
@@ -2597,7 +2597,7 @@ var uPlot = (function () {
 			 showLegend && legendRows.splice(i, 1)[0][0].parentNode.remove();
 			 cursorPts.length > 1 && cursorPts.splice(i, 1)[0].remove();
 
-			// TODO: de-init no-longer-needed scales?
+			// todo: de-init no-longer-needed scales?
 		}
 
 		self.delSeries = delSeries;
@@ -2908,7 +2908,7 @@ var uPlot = (function () {
 				{ pendScales[k$5] = null; }
 		}
 
-		// TODO: drawWrap(si, drawPoints) (save, restore, translate, clip)
+		// todo: drawWrap(si, drawPoints) (save, restore, translate, clip)
 		function drawPoints(si) {
 		//	log("drawPoints()", arguments);
 
@@ -3456,7 +3456,7 @@ var uPlot = (function () {
 			}
 
 		//	if (shouldSetSelect) {
-			// TODO: update .u-select metrics (if visible)
+			// todo: update .u-select metrics (if visible)
 			//	setStylePx(selectDiv, TOP, select.top = 0);
 			//	setStylePx(selectDiv, LEFT, select.left = 0);
 			//	setStylePx(selectDiv, WIDTH, select.width = 0);
@@ -3795,7 +3795,6 @@ var uPlot = (function () {
 
 			closestDist = inf;
 
-			// TODO: extract
 			var xDim = scaleX.ori == 0 ? plotWidCss : plotHgtCss;
 			var yDim = scaleX.ori == 1 ? plotWidCss : plotHgtCss;
 

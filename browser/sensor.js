@@ -10,10 +10,26 @@ class Sensor {
     constructor(input) {
         this.index = input.index;
         if (input.name) this.name = input.name;
-        if (input.duty_cycle) assignDutyCycle(input.duty_cycle.functions,input.duty_cycle.domains, input.duty_cycle.reference_sensor_id);
+        if (input.duty_cycle) {
+            // console.log(input.duty_cycle.reference_sensor_index)
+            // if (Number.isInteger(input.duty_cycle.reference_sensor_index)) {
+            // console.log("index present")
+            this.assignDutyCycle(input.duty_cycle);
+            // } else {
+            //     this.assignDutyCycle(input.duty_cycle.functions, input.duty_cycle.domains, input.duty_cycle.reference_sensor_id);
+            // }
+            this.isModulated = true;
+        }
+        // if (input.frequency) this.assignFrequency(input.frequency);
+        // else {
+            this.frequency;
+            this.frequency_old;
+        // }
+
         // this.name = this.assignName(input.name);
         this.accuracy = this.assignAccuracy(input.accuracy);
         this.limits = this.assignExtrema(input.limits);
+
         this.type = input.type;
         this.unit = input.unit;
         this.precision = input.precision;
@@ -25,9 +41,8 @@ class Sensor {
         this.value_old;
         this.parent_node;
         this.parent_microcontroller;
-        this.frequency; //* taken in as Hz, converted to samples/sec
-        this.frequency_old;
         this.reference_sensor;
+        this.reference_sensor_index;
         this.isGraphed = input.isGraphed;
         this.isRendered = input.isRendered;
         this.color = "#808080";
@@ -51,65 +66,143 @@ class Sensor {
         scene.getObjectByName(object).attach(this.mesh);
     }
 
-
-    updateDutyCycle() { //* assert( formulas[].length == domains[].length )
-        //TODO add power reduction functionality
-        //default callback that does nothing.
-        //limit support to:
-        //  proportional 
-        //  piecewise-linear
-        //  "custom"
-        // rip programmer
-
-        // accel. and light sensor
-        // only sample light if accel is... [3 ranges];
-        // time windnow t, ...
-        // callback type (proportional/piecewise
-        //piecewise
-        // array[3] -> bounds of range -> [0.5,1,2]
-        // proportional:
-        // y=alpha(X)+c
-        // would need an update loop (probably validateInput())
-        // sending alpha, c
-        // alpha = porportionality factor
-        // c = offset 
-
-        // this.duty_cycle = Piecewise(formulas, domains);
-        // this.duty_cycle = (reference_sensor_id.value);
-
-        this.frequency_old = this.frequency;
-        this.frequency = this.duty_cycle(); //? should this have parentheses??
-
-        if (this.frequency != this.frequency_old) {
-            //* byte telling uC we want to update specific sensor polling rate
-            var message = "*";
-            //* byte telling uC which sensor
-            message += sensors[getSensorIndexByID(reference_sensor_id)].index;
-            //* byte telling uC what to set the polling rate to
-            message += sensors[getSensorIndexByID(reference_sensor_id)].frequency;
-            connection.send(message);
-        }
+    updateGraphics() {
+        //only here to prevent errors since not all sensors can be rendered in 3D
     }
 
-    assignDutyCycle(formulas, domains, reference_sensor_id) { //* assert( formulas[].length == domains[].length )
-        this.reference_sensor = reference_sensor_id;
-        // function Piecewise(xs, ys) {
-        this.duty_cycle = function () {
-            var xs = formulas;
-            var ys = domains;
+
+    updateDutyCycle() { //* assert( formulas[].length == domains[].length )
+        if (this.isModulated) {
+            //default callback that does nothing.
+            //limit support to:
+            //  proportional 
+            //  piecewise-linear
+            //  "custom"
+            // rip programmer
+
+            // accel. and light sensor
+            // only sample light if accel is... [3 ranges];
+            // time windnow t, ...
+            // callback type (proportional/piecewise
+            //piecewise
+            // array[3] -> bounds of range -> [0.5,1,2]
+            // proportional:
+            // y=alpha(X)+c
+            // would need an update loop (probably validateInput())
+            // sending alpha, c
+            // alpha = porportionality factor
+            // c = offset 
+
+            // this.duty_cycle = Piecewise(formulas, domains);
+            // this.duty_cycle = (reference_sensor_id.value);
+            this.frequency_old = this.frequency;
+
+
+            var xs = this.duty_cycle.formulas;
+            var ys = this.duty_cycle.domains;
+            // console.log("well?" + this.duty_cycle.reference_sensor_index)
+            if (Number.isInteger(this.duty_cycle.reference_sensor_index)) {
+                // console.log(this.duty_cycle)
+                var x = platform.sensors[getSensorIndexByID(this.duty_cycle.reference_sensor_id)].value[this.duty_cycle.reference_sensor_index];
+            }
+            else if (this.duty_cycle.reference_sensor_index == "raw") {
+                var x = platform.sensors[getSensorIndexByID(this.duty_cycle.reference_sensor_id)].value_raw;
+            }
+            else
+                var x = platform.sensors[getSensorIndexByID(this.duty_cycle.reference_sensor_id)].value;
             //bisect
             var lo = 0, hi = xs.length - 1;
             while (hi - lo > 1) {
                 var mid = (lo + hi) >> 1;
-                if (sensors[getSensorIndexByID(this.reference_sensor)].value < xs[mid]) hi = mid;
+                if (x < xs[mid]) hi = mid;
                 else lo = mid;
             }
             //project
-            return ys[lo] + (ys[hi] - ys[lo]) / (xs[hi] - xs[lo]) * (x - xs[lo]);
-        };
-        // }
+            this.frequency = ys[lo] + (ys[hi] - ys[lo]) / (xs[hi] - xs[lo]) * (x - xs[lo]);
 
-        this.frequency = this.duty_cycle(reference_sensor_id);
+            // console.log("frequency changed to " + this.frequency + " because " + this.duty_cycle.reference_sensor_id + "[" + this.duty_cycle.reference_sensor_index + "] was " + platform.sensors[getSensorIndexByID(this.duty_cycle.reference_sensor_id)].value[this.duty_cycle.reference_sensor_index]);
+
+            // this.frequency = this.duty_cycle; // should not have parentheses.
+            // console.log(this.frequency);
+            if (this.frequency != this.frequency_old) {
+                // assignFrequency(this.frequency)//TODO can't use this yet because WS isn't loaded asoon enough
+                //* byte telling uC we want to update specific sensor polling rate
+                var message = "*";
+                //* byte telling uC which sensor
+                if (Array.isArray(this.index))
+                    message += this.index[0];
+                else
+                    message += this.index;
+                connection.send(message);
+                console.log(message);
+
+                message = ">";
+                //* byte telling uC what to set the polling rate to
+                message += Math.round(this.frequency);
+                connection.send(message);
+                console.log(message);
+            }
+        }
+    }
+
+    assignFrequency(frequency) {
+        this.frequency = frequency;
+        //* byte telling uC we want to update specific sensor polling rate
+        var message = "*";
+        //* byte telling uC which sensor
+        if (Array.isArray(this.index))
+            message += this.index[0];
+        else
+            message += this.index;
+        connection.send(message);
+        console.log(message);
+
+        message = ">";
+        //* byte telling uC what to set the polling rate to
+        message += Math.round(frequency);
+        connection.send(message);
+        console.log(message);
+    }
+
+    assignDutyCycle(duty_cycle) { //formulas, domains, reference_sensor_id, reference_sensor_index) { //* assert( formulas[].length == domains[].length )
+        this.duty_cycle = duty_cycle;
+        // this.duty_cycle.domains = domains;
+        // this.duty_cycle.reference_sensor = reference_sensor_id;
+        // this.duty_cycle.reference_sensor_index = reference_sensor_index;
+        // console.log("DUTY CYCLE " + this.duty_cycle)
+
+        // this.reference_sensor = reference_sensor_id;
+        // // console.log(this.reference_sensor) //correct
+        // if (Number.isInteger(reference_sensor_index))
+        //     this.reference_sensor_index = reference_sensor_index;
+
+        // // function Piecewise(xs, ys) {
+        // this.duty_cycle = function () {
+        //     var xs = formulas;
+        //     var ys = domains;
+        //     if (Number.isInteger(this.reference_sensor_index)) {
+        //         this.reference_sensor_index = reference_sensor_index;
+        //         var x = platform.sensors[getSensorIndexByID(this.reference_sensor)].value[this.reference_sensor_index];
+        //     }
+        //     else
+        //         var x = platform.sensors[getSensorIndexByID(this.reference_sensor)].value;
+        //     //bisect
+        //     var lo = 0, hi = xs.length - 1;
+        //     while (hi - lo > 1) {
+        //         var mid = (lo + hi) >> 1;
+        //         if (x < xs[mid]) hi = mid;
+        //         else lo = mid;
+        //     }
+        //     //project
+        //     return ys[lo] + (ys[hi] - ys[lo]) / (xs[hi] - xs[lo]) * (x - xs[lo]);
+        // };
+        // // }
+        // // console.log(reference_sensor_index) //correct
+
+        // this.frequency = this.duty_cycle(reference_sensor_id);
+        // // console.log(this.frequency) //correct
+
+        // console.log("frequency changed to " + this.frequency + " because " + this.reference_sensor + "[" + this.reference_sensor_index + "] was " + platform.sensors[getSensorIndexByID(this.reference_sensor)].value[this.reference_sensor_index]);
     }
 
     updateValue() {
@@ -233,10 +326,12 @@ class Classifier extends Sensor {
         super(input);
         if (!this.icon) this.icon = "shape-outline";
         this.dictionary = input.dictionary;
+        this.value_raw;
     }
     updateValue() {
         this.value_old = this.value;
         this.value = this.dictionary[message_array[this.index]];
+        this.value_raw = message_array[this.index];
     }
 }
 
@@ -254,11 +349,32 @@ class Distance extends Sensor {
         if (!this.icon) this.icon = "ruler";
         this.orientation = input.orientation;
     }
+    // updateGraphics() {
+    //     if (this.visible == true) {
+    //         if (this.value_old != this.value) {
+    //             this.mesh.scale.z = current_scale * (this.value / this.max); //TODO probably need to figure out how to make axes more universal.
+    //             this.mesh.updateMatrix();
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
+    //! band-aid 
     updateGraphics() {
         if (this.visible == true) {
             if (this.value_old != this.value) {
-                this.mesh.scale.z = current_scale * (this.value / this.max); //TODO probably need to figure out how to make axes more universal.
-                this.mesh.updateMatrix();
+                if (this.id == "uC0_DISTANCE")
+                    var name = "lineL";
+                else if (this.id == "uC0_DISTANCE1")
+                    var name = "lineR";
+                var line = scene.getObjectByName("shoe").getObjectByName(name);
+                // console.log(line)
+                // line.mesh.scale.z = current_scale * (this.value / this.max);
+                line.scale.z = current_scale * (this.value / this.limits.max);
+                // console.log(line.scale.z)
+                // console.log(this.max)
+                line.updateMatrix();
                 return true;
             }
         }
@@ -271,16 +387,16 @@ class Accelerometer extends VectorSensor { //* probably not useful to render sin
         super(input);
     }
 
-    updateGraphics() {
-        if (this.visible == true) {
-            if (this.value_old != this.value) {
-                if (motion_translation == true)
-                    updatePosition(this.mesh);
-                return true;
-            }
-        }
-        return false;
-    }
+    // updateGraphics() {
+    //     if (this.visible == true) {
+    //         if (this.value_old != this.value) {
+    //             if (motion_translation == true)
+    //                 updatePosition(this.mesh);
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
 }
 
 class LinearAccelerometer extends Accelerometer {
@@ -306,15 +422,15 @@ class Quaternion extends VectorSensor {
     constructor(input) {
         super(input);
     }
-    updateGraphics() {
-        if (this.visible == true) {
-            if (this.value_old != this.value) {
-                updateAttitude(this.mesh);
-                return true;
-            }
-        }
-        return false;
-    }
+    // updateGraphics() {
+    //     if (this.visible == true) {
+    //         if (this.value_old != this.value) {
+    //             updateAttitude(this.mesh);
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
 }
 
 class Euler extends VectorSensor {
@@ -322,13 +438,15 @@ class Euler extends VectorSensor {
         super(input);
     }
     updateGraphics() {
-        if (this.visible == true) {
-            if (this.value_old != this.value) {
-                updateOrientation(this.mesh);
-                return true;
-            }
-        }
-        return false;
+        //! band-aid
+        updateOrientation(scene.getObjectByName("shoe"), this.value);
+        // if (this.visible == true) {
+        //     if (this.value_old != this.value) {
+        //         updateOrientation(this.mesh);
+        //         return true;
+        //     }
+        // }
+        // return false;
     }
 }
 
@@ -340,7 +458,9 @@ class Gravity extends VectorSensor {
     updateGraphics() {
         if (this.visible == true) {
             if (this.value_old != this.value) {
-                updateGeometry(this.mesh);
+                // updateGeometry(this.mesh); //corect implimentation
+                updateGeometry(scene.getObjectByName("gravity"));
+
                 return true;
             }
         }

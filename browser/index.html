@@ -153,7 +153,7 @@
 			icon: "motion-sensor",
 			index: 12,
 			type: "motion",
-			dictionary: { 1: "Motionless", 3: "Stable", 4: "Moving" }
+			dictionary: { 1: "Motionless", 3: "Stable", 4: "Moving" } 
 		}));
 		uC1.addSensor(new Gyroscope({
 			index: [16, 17, 18],
@@ -176,6 +176,7 @@
 			unit: "rad",
 			precision: 0.000000,
 		}));
+
 		var freq = 20;
 		uC1.addSensor(new Distance({
 			index: 6,
@@ -184,11 +185,13 @@
 			limits: [0, 1000],
 			orientation: "right",
 			isGraphed: true,
+			frequency: freq,
 			duty_cycle:
 			{
-				functions: [0.25, 0.5, 0.75],
-				domains: [freq / 10, freq / 2, freq],
-				reference_sensor_id: "uC1_ACCELEROMETER"
+				formulas: [1, 4], //if x<=1, divide refresh rate by 10; if >=4, apply full refresh rate
+				domains: [freq / 20, freq],
+				reference_sensor_id: "uC0_CLASSIFIER",
+				reference_sensor_index: "raw",
 			}
 		}));
 		uC1.addSensor(new Distance({

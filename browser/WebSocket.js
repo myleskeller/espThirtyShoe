@@ -1,7 +1,7 @@
 //TODO convert ASCII websocket to binary 
 //TODO make communication follow standardized format
 //TODO integrate object coordinates/orientation into 3d positioning
-//TODO change sensors index to be dynamically allocated instead of hard-coded 
+//TODO change 'indices' to be dynamically allocated instead of hard-coded 
 
 
 // var websocket_address = "ws://192.168.88.16:81/";
@@ -82,10 +82,11 @@ function initWebSocket(websocket_address) {
 function updateSensors() {
 	platform.sensors.forEach(element => {
 		element.updateValue();
+		element.updateDutyCycle();
 
 		if (page_visible) {
 			element.updateUIValue();
-			// element.updateGraphics(); //TODO massive overhaul of mesh and variable handling required.
+			element.updateGraphics(); //TODO massive overhaul of mesh and variable handling required.
 			// updateChart(); 
 			// updateChart(platform.sensors[7].value, platform.sensors[8].value); 
 			// colorScaleValue(dL);

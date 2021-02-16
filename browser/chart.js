@@ -1,4 +1,6 @@
 var chart;
+var duration = 15; //seconds
+
 
 //* customized click handler for legend (to figure out why clicks aren't always registered..)
 var newLegendClickHandler = function (e, legendItem) {
@@ -10,13 +12,13 @@ var newLegendClickHandler = function (e, legendItem) {
 	meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
 
 	// We hid a dataset ... rerender the chart
-	console.log("click registered by legend.");
+	// console.log("click registered by legend.");
 	ci.update();
 };
 
 function initChart(rate, refresh_frequency) {
 	var id = 'chart';
-	var duration = 60000; //ms
+	// var duration = 60000; //ms
 	if (!refresh_frequency)
 		refresh_frequency = 0;
 
@@ -106,7 +108,7 @@ function initChart(rate, refresh_frequency) {
 			plugins: {
 				streaming: {
 					refresh: refresh_frequency, //* controls data refresh frequency (in ms)
-					duration: duration,
+					duration: duration*1000,
 					onRefresh: function (chart) { // callback on chart update interval
 						var i = 0;
 						var now = Date.now();
@@ -131,7 +133,7 @@ function initChart(rate, refresh_frequency) {
 			}
 		}
 	});
-	fillTimeAxis(duration);
+	fillTimeAxis(duration*1000);
 
 	if (rate)
 		changeChartFrameRate(rate);
@@ -153,8 +155,9 @@ function fillTimeAxis(duration) {
 	var secondsPerLabel = 5;
 	var limit = (duration / 1000);
 
-	var mycss = window.getComputedStyle(document.getElementById("chart-container"));
-	var container_width = parseFloat(mycss.getPropertyValue("width").split("px")) + 50 + "px";
+	var parent_container = window.getComputedStyle(document.getElementById("chart-container"));
+	// var container_width = parseFloat(mycss.getPropertyValue("width").split("px")) + 50 + "px";
+	var container_width = parseFloat(parent_container.getPropertyValue("width").split("px")) + 0 + "px";
 	// console.log(container_width)
 	document.getElementById('time-axis-container').style.width = container_width;
 

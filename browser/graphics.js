@@ -3,6 +3,7 @@ var motion_translation = true;
 var manager = new THREE.LoadingManager();
 var timestamp, last_timestamp;
 const bottom_center_shoe = new THREE.Vector3();
+var current_scale;
 
 const scene = new THREE.Scene();
 var renderer;
@@ -110,11 +111,13 @@ function createLines(_shoe) { //if attaching to shoe doesn't work, deal with att
 	meshLineR.setGeometry(geometryR);
 
 	var lineLmaterial = new MeshLineMaterial({
-		color: data1Color,
+		// color: data1Color,
+		color: platform.sensors[getSensorIndexByID("uC0_DISTANCE")].color,
 		lineWidth: 2
 	});
 	var lineRmaterial = new MeshLineMaterial({
-		color: data2Color,
+		color: platform.sensors[getSensorIndexByID("uC0_DISTANCE1")].color,
+		// color: data2Color,
 		lineWidth: 2
 	});
 

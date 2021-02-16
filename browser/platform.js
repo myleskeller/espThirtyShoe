@@ -28,7 +28,7 @@ class Platform {
     assignColors() {
         var colors_needed = this.colors.length + 1;
         // console.log(colors_needed)
-        this.colors = randomColor({ luminosity: 'dark', count: colors_needed });
+        this.colors = randomColor({ luminosity: 'bright', count: colors_needed });
 
         // console.log(this.sensors.length);
         for (var i = 0; i < this.sensors.length; i++) {

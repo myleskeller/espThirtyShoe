@@ -73,10 +73,10 @@ function updatePosition(_shoe) {
 	_shoe.updateMatrix();
 }
 
-function updateOrientation(_shoe) {
-	_shoe.rotation.x = eR;
-	_shoe.rotation.z = eP;
-	_shoe.rotation.y = eY;
+function updateOrientation(_shoe, values) {
+	_shoe.rotation.x = values[0];
+	_shoe.rotation.z = values[1];
+	_shoe.rotation.y = values[2];
 	// _shoe.rotation.y = parseFloat(eY)+THREE.Math.degToRad(180);  //doesn't matter for rendering
 	_shoe.updateMatrix();
 }

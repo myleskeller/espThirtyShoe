@@ -1,7 +1,7 @@
 .bordered {	
-	/* border: 1px !important;
+	border: 1px !important;
 	border-color: white !important;
-	border-style: solid !important; */
+	border-style: solid !important;
 }
 
 body {
@@ -164,10 +164,12 @@ td{
 	display: block;
 	position: absolute;
 	bottom: 10px;
-	right: -40px;
+	/* right: -40px; */
+	right: 50px;
 	font-size: 0.5em;
 	z-index: 102;
 	pointer-events: none;
+	text-align: right;
 }
 
 #time-axis-container table{
