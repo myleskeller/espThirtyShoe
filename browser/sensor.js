@@ -6,6 +6,7 @@
 // sensors.push(new Step());
 // console.log(sensors);
 
+
 class Sensor {
     constructor(input) {
         this.index = input.index;
@@ -22,8 +23,8 @@ class Sensor {
         }
         // if (input.frequency) this.assignFrequency(input.frequency);
         // else {
-            this.frequency;
-            this.frequency_old;
+        this.frequency;
+        this.frequency_old;
         // }
 
         // this.name = this.assignName(input.name);
@@ -46,6 +47,8 @@ class Sensor {
         this.isGraphed = input.isGraphed;
         this.isRendered = input.isRendered;
         this.color = "#808080";
+        this.lastUpdate = 0;
+        this.delay = 5000;
 
 
         if (Array.isArray(this.index)) {
@@ -104,6 +107,7 @@ class Sensor {
             if (Number.isInteger(this.duty_cycle.reference_sensor_index)) {
                 // console.log(this.duty_cycle)
                 var x = platform.sensors[getSensorIndexByID(this.duty_cycle.reference_sensor_id)].value[this.duty_cycle.reference_sensor_index];
+                // var x = platform.sensors[getSensorIndexByID(this.duty_cycle.reference_sensor_id)].value[0]; //! band-aid
             }
             else if (this.duty_cycle.reference_sensor_index == "raw") {
                 var x = platform.sensors[getSensorIndexByID(this.duty_cycle.reference_sensor_id)].value_raw;
@@ -111,6 +115,7 @@ class Sensor {
             else
                 var x = platform.sensors[getSensorIndexByID(this.duty_cycle.reference_sensor_id)].value;
             //bisect
+            // console.log("VALUE:" + x)
             var lo = 0, hi = xs.length - 1;
             while (hi - lo > 1) {
                 var mid = (lo + hi) >> 1;
@@ -124,24 +129,42 @@ class Sensor {
 
             // this.frequency = this.duty_cycle; // should not have parentheses.
             // console.log(this.frequency);
-            if (this.frequency != this.frequency_old) {
-                // assignFrequency(this.frequency)//TODO can't use this yet because WS isn't loaded asoon enough
-                //* byte telling uC we want to update specific sensor polling rate
-                var message = "*";
-                //* byte telling uC which sensor
-                if (Array.isArray(this.index))
-                    message += this.index[0];
-                else
-                    message += this.index;
-                connection.send(message);
-                console.log(message);
+            // var lastUpdate = 0;
+            // var delay = 20;
 
-                message = ">";
-                //* byte telling uC what to set the polling rate to
-                message += Math.round(this.frequency);
-                connection.send(message);
-                console.log(message);
+            // function doClick() {
+            //   if ())
+            //     return;
+            //     // lastUpdate = Date.now();
+
+            if (this.frequency != this.frequency_old) {
+                if (this.lastUpdate >= (Date.now() - this.delay)) {
+                    return;
+                }
+                // assignFrequency(this.frequency)//TODO can't use this yet because WS isn't loaded asoon enough
+                let freq = Math.abs(Math.round(this.frequency));
+                console.log("freq:" + freq)
+                if (Number.isInteger(freq)) {
+                    //* byte telling uC we want to update specific sensor polling rate
+                    var message = "*";
+                    //* byte telling uC which sensor
+                    if (Array.isArray(this.index))
+                        message += this.index[0];
+                    else
+                        message += this.index;
+                    connection.send(message);
+                    console.log(message);
+
+                    message = ">";
+                    //* byte telling uC what to set the polling rate to
+                    if (freq == 0) { freq = 1; }
+                    message += freq;
+                    connection.send(message);
+                    console.log(message);
+                }
+                this.lastUpdate = Date.now();
             }
+
         }
     }
 
@@ -465,5 +488,17 @@ class Gravity extends VectorSensor {
             }
         }
         return false;
+    }
+}
+
+class Virtual extends Sensor {
+    constructor(input) {
+        super(input);
+        if (!this.icon) this.icon = "creation";
+        this.function = input.function;
+    }
+    updateValue() {
+        this.value_old = this.value;
+        this.value = this.function(); //? good syntax??
     }
 }

@@ -127,6 +127,10 @@ function addEventListeners() {
 		connection.send('!');
 	});
 
+	document.getElementById("button_getSensorInfo").addEventListener("click", function (event) {
+		connection.send('?');
+	});
+
 	document.getElementById("button_calibrateAccel").addEventListener("click", function (event) {
 		result = confirm("To calibrate the accelerometer, set the shoe on a still surface and press OK.");
 		if (result == true) {
@@ -215,6 +219,7 @@ function addEventListeners() {
 	addMouseListeners(document.getElementById("button_toggleConsoleVisibility"));
 	addMouseListeners(document.getElementById("button_changeShoeTexture"));
 	addMouseListeners(document.getElementById("button_tareGyro"));
+	addMouseListeners(document.getElementById("button_getSensorInfo"));
 	addMouseListeners(document.getElementById("button_restartESP"));
 	addMouseListeners(document.getElementById("button_calibrateAccel"));
 	addMouseListeners(document.getElementById("button_changeUpdateSpeed"));
@@ -345,6 +350,10 @@ function initInfoPanel() {
 				var label = Object.keys(indices)[element.index[i]].split('_')[1];
 				content += '<td class="tooltip"><div id="item_' + element.name + i + '" class="item"></div><span class="tooltiptext">' + label + '</span></td>';
 			}
+		}
+		else if (!element.index) {
+			var label = element.name;
+			content += '<td class="tooltip"><div id="item_' + element.name + '" class="item"></div><span class="tooltiptext">' + label + '</span></td>';
 		}
 		else {
 			var label = Object.keys(indices)[element.index].split('_')[1];

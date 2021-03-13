@@ -1,5 +1,5 @@
 var chart;
-var duration = 15; //seconds
+var duration = 60; //seconds
 
 
 //* customized click handler for legend (to figure out why clicks aren't always registered..)

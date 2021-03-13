@@ -72,6 +72,8 @@
 			<i id="button_tareGyro" class="mdi mdi-scale-off tooltip"><span class="tooltiptext">tare gyroscope
 					(persistent)</span></i>
 			<i id="button_restartESP" class="mdi mdi-restart tooltip"><span class="tooltiptext">reboot device</span></i>
+			<i id="button_getSensorInfo" class="mdi mdi-information-outline tooltip"><span class="tooltiptext">get
+					current sensor info</span></i>
 			<i id="button_calibrateAccel" class="mdi mdi-scale-balance tooltip"><span class="tooltiptext">calibrate
 					accelerometer</span></i>
 			<i id="button_changeUpdateSpeed" class="mdi mdi-clock-fast tooltip"><span class="tooltiptext">change update
@@ -153,7 +155,7 @@
 			icon: "motion-sensor",
 			index: 12,
 			type: "motion",
-			dictionary: { 1: "Motionless", 3: "Stable", 4: "Moving" } 
+			dictionary: { 1: "Motionless", 3: "Stable", 4: "Moving" }
 		}));
 		uC1.addSensor(new Gyroscope({
 			index: [16, 17, 18],
@@ -188,10 +190,13 @@
 			frequency: freq,
 			duty_cycle:
 			{
-				formulas: [1, 4], //if x<=1, divide refresh rate by 10; if >=4, apply full refresh rate
-				domains: [freq / 20, freq],
-				reference_sensor_id: "uC0_CLASSIFIER",
-				reference_sensor_index: "raw",
+				// formulas: [1, 4], //if x<=1, divide refresh rate by 10; if >=4, apply full refresh rate
+				// domains: [freq / 20, freq],
+				// reference_sensor_id: "uC0_CLASSIFIER",
+				formulas: [-5, 0, 5], //if x<=1, divide refresh rate by 10; if >=4, apply full refresh rate
+				domains: [freq, freq / 20, freq],
+				reference_sensor_id: "uC1_ACCELEROMETER",
+				reference_sensor_index: 0,
 			}
 		}));
 		uC1.addSensor(new Distance({
@@ -200,7 +205,32 @@
 			precision: 0,
 			limits: [0, 1000],
 			orientation: "left",
-			isGraphed: true
+			isGraphed: true,
+			// frequency: 25,
+			frequency: freq,
+			duty_cycle:
+			{
+				formulas: [-5, 0, 5], //if x<=1, divide refresh rate by 10; if >=4, apply full refresh rate
+				domains: [freq, freq / 20, freq],
+				reference_sensor_id: "uC1_ACCELEROMETER",
+				reference_sensor_index: 0,
+			}
+		}));
+
+		// function action(callback, x, y) {
+		// 	var result = callback(x, y);
+		// 	alert(result);
+		// }
+
+		uC1.addSensor(new Virtual({
+			name: "Magnitude",
+			unit: "m/s^2",
+			precision: 0.000000,
+			isGraphed: true,
+			function: function () {
+				var dims = platform.sensors[getSensorIndexByID("uC1_ACCELEROMETER")].value;
+				return Math.sqrt(Math.pow(dims[0], 2) + Math.pow(dims[1], 2) + Math.pow(dims[2], 2));
+			}
 		}));
 
 		initChart(30, 250);
